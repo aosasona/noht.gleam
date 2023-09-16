@@ -1,12 +1,18 @@
 import gleam/http
+import gleam/option.{Option}
+import sqlight
 
-pub type AppRequest {
-  AppRequest(
+pub type Request {
+  Request(
     method: http.Method,
     path: List(String),
     headers: List(#(String, String)),
     body: String,
-    db: String,
-    user_id: Int,
+    db: sqlight.Connection,
+    user_id: Option(Int),
   )
+}
+
+pub type User {
+  User(id: Int, email: String, password_hash: String)
 }

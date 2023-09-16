@@ -16,6 +16,7 @@ gleam_erlang = "~> 0.22"
 mist = "~> 0.13"
 sqlight = "~> 0.7"
 gleam_json = "~> 0.6"
+ids = "~> 0.9"
 
 [dev-dependencies]
 gleeunit = "~> 0.10"

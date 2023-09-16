@@ -59,6 +59,16 @@ pub fn migrate_schema(db: sqlight.Connection) -> Result(Nil, AppError) {
       FOREIGN KEY (user_id) REFERENCES users (id),
       FOREIGN KEY (folder_id) REFERENCES folders (id)
     );
+
+    CREATE TABLE IF NOT EXISTS _auth_tokens (
+      id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+      user_id INTEGER NOT NULL,
+      token TEXT NOT NULL,
+      issued_at INTEGER NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      last_used_at INTEGER NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users (id),
+      UNIQUE (token)
+    );
     ",
     db,
   )
