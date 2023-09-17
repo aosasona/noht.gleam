@@ -27,7 +27,7 @@ pub fn require_method(
     True -> next()
     False ->
       respond.with_err(
-        err: error.MethodNotAllowed(request.method),
+        err: error.MethodNotAllowed(request.method, request.path),
         errors: None,
       )
   }

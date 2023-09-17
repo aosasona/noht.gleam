@@ -1,5 +1,6 @@
 import sqlight
 import gleam/http
+import gleam/string
 import lib/logger
 
 pub type HTTPError =
@@ -13,7 +14,7 @@ pub type ApiError {
   UnprocessableEntity
   NotFound
   InternalServerError
-  MethodNotAllowed(method: http.Method)
+  MethodNotAllowed(method: http.Method, path: List(String))
   ClientError(message: String)
   CustomError(String, Int)
   SqlightError(sqlight.Error)
@@ -47,11 +48,10 @@ pub fn get_error(err: ApiError) -> HTTPError {
     CustomError(message, code) -> make_error(message, code)
     Forbidden -> make_error("You don't have permission to do that", 403)
     NotFound -> make_error("The requested resource was not found", 404)
-    MethodNotAllowed(method) ->
-      make_error(
-        "Method " <> method_to_string(method) <> " not allowed for this resource",
-        405,
-      )
+    MethodNotAllowed(method, path_parts) -> {
+      let path = string.join(path_parts, "/")
+      make_error("Cannot " <> method_to_string(method) <> " /" <> path, 405)
+    }
     SqlightError(err) -> {
       // log the error and return a generic error
       logger.error(err.message)
