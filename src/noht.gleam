@@ -7,6 +7,7 @@ import gleam/erlang/process
 import gleam/erlang/os
 import api/router
 import mist
+import sqlight
 
 pub fn main() {
   let port = load_port()
@@ -23,6 +24,7 @@ pub fn main() {
   |> mist.start_http
 
   process.sleep_forever()
+  // sqlight.close(db)
 }
 
 fn load_port() -> Int {

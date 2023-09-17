@@ -1,6 +1,6 @@
 import gleam/erlang/os
 import gleam/result
-import lib/error.{AppError}
+import api/error.{ApiError}
 import sqlight
 
 fn get_db_path() -> String {
@@ -24,13 +24,13 @@ pub fn with_connection(
   f(db)
 }
 
-pub fn migrate_schema(db: sqlight.Connection) -> Result(Nil, AppError) {
+pub fn migrate_schema(db: sqlight.Connection) -> Result(Nil, ApiError) {
   // `0` as a folder_id means it is uncategorized
   sqlight.exec(
     "
     CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-      name TEXT NOT NULL,
+      username TEXT NOT NULL,
       email TEXT NOT NULL UNIQUE,
       password TEXT NOT NULL,
       created_at INTEGER NOT NULL DEFAULT CURRENT_TIMESTAMP,
