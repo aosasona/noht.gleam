@@ -1,17 +1,18 @@
 import api/api
-import api/respond
 import api/error
+import api/respond
 import api/middleware
+import handlers/ping.{handle_ping}
 import gleam/http/request.{Request}
 import gleam/http/response.{Response}
-import mist.{Connection, ResponseData}
 import gleam/option.{None}
+import mist.{Connection, ResponseData}
 import sqlight
 
 pub fn router(request: api.Request) -> Response(ResponseData) {
   case request.path {
-    ["ping"] -> respond.with_json(message: "pong", data: None, meta: None)
-    _ -> respond.with_err(error.NotFound)
+    ["ping"] -> handle_ping()
+    _ -> respond.with_err(err: error.NotFound, errors: None)
   }
 }
 

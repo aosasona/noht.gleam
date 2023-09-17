@@ -17,9 +17,7 @@ pub fn main() {
   string.concat(["Starting server on port ", int.to_string(port)])
   |> logger.info
 
-  let handler = router.app(request: _, database: db)
-
-  handler
+  router.app(request: _, database: db)
   |> mist.new
   |> mist.port(port)
   |> mist.start_http

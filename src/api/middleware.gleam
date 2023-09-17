@@ -42,14 +42,14 @@ pub fn convert_string_body(
           |> request.set_body(body)
           |> next
         }
-        Error(_) -> respond.with_err(error.BadRequest)
+        Error(_) -> respond.with_err(err: error.BadRequest, errors: None)
       }
     }
-    Error(_) -> respond.with_err(error.BadRequest)
+    Error(_) -> respond.with_err(err: error.BadRequest, errors: None)
   }
 }
 
-// TODO: handle authentication properly
+// TODO: handle authentication properly i.e only allow sessions younger than 14 days or last used within the last 5 days
 pub fn authenticate(
   request: Request(String),
   _db: sqlight.Connection,
@@ -83,7 +83,6 @@ pub fn transform_to_api_request(
     method: request.method,
     headers: request.headers,
     path: request.path_segments(request),
-    // TODO: parse body to JSON
     body: request.body,
     db: db,
     user_id: user_id,

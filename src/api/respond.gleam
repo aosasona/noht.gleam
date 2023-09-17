@@ -15,9 +15,27 @@ fn respond(res: #(Int, String)) -> Response(ResponseData) {
   |> response.set_body(mist.Bytes(bit_builder.from_string(body)))
 }
 
-pub fn with_err(err_type: error.ApiError) -> Response(ResponseData) {
-  error.as_json_with_code(err_type)
-  |> respond
+pub fn with_err(
+  err err_type: error.ApiError,
+  errors errors: Option(List(#(String, Json))),
+) -> Response(ResponseData) {
+  let #(code, message) = error.get_error(err_type)
+  respond(#(
+    code,
+    object([
+      #("ok", bool(False)),
+      #("code", int(code)),
+      #("error", string(message)),
+      #(
+        "errors",
+        case errors {
+          Some(errors) -> object(errors)
+          None -> null()
+        },
+      ),
+    ])
+    |> to_string,
+  ))
 }
 
 pub fn with_json(
