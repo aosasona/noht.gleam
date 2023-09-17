@@ -7,11 +7,11 @@ import gleam/int
 import gleam/bit_string
 import gleam/http/request.{Request}
 import gleam/http/response.{Response}
-import gleam/string_builder.{StringBuilder}
 import gleam/option.{None, Option, Some}
 import gleam/result
 import sqlight
 import mist.{Connection, ResponseData}
+import api/respond
 
 pub fn log_request(
   request: Request(_),
@@ -42,16 +42,17 @@ pub fn convert_string_body(
           |> request.set_body(body)
           |> next
         }
-        Error(_) -> error.as_response(error.BadRequest)
+        Error(_) -> respond.with_err(error.BadRequest)
       }
     }
-    Error(_) -> error.as_response(error.BadRequest)
+    Error(_) -> respond.with_err(error.BadRequest)
   }
 }
 
+// TODO: handle authentication properly
 pub fn authenticate(
   request: Request(String),
-  db: sqlight.Connection,
+  _db: sqlight.Connection,
   next: fn(#(Request(String), Option(Int))) -> Response(ResponseData),
 ) -> Response(ResponseData) {
   let user_id: Option(Int) = case request.get_header(request, "Authorization") {

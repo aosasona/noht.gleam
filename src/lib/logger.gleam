@@ -1,4 +1,5 @@
 import gleam/io
+import gleam/erlang.{Millisecond}
 import gleam/string as g_string
 import gleam/int as g_int
 import gleam/json.{int, object, string}
@@ -19,15 +20,8 @@ fn level_as_str(level: Level) -> String {
   }
 }
 
-@external(erlang, "Elixir.DateTime", "utc_now")
-fn utc_now() -> Int
-
-@external(erlang, "Elixir.DateTime", "to_unix")
-fn to_unix(utc_time: Int) -> Int
-
 pub fn now() -> Int {
-  utc_now()
-  |> to_unix
+  erlang.system_time(Millisecond)
 }
 
 pub fn format_duration(duration: Int) -> String {
@@ -42,13 +36,7 @@ pub fn log(level: Level, message: String) {
     object([
       #("level", string(level_as_str(level))),
       #("message", string(message)),
-      #(
-        "timestamp",
-        int(
-          utc_now()
-          |> to_unix,
-        ),
-      ),
+      #("timestamp", int(now())),
     ])
     |> json.to_string
 
@@ -68,13 +56,7 @@ pub fn log_request(
       #("path", string(path)),
       #("duration", string(format_duration(duration))),
       #("status", int(code)),
-      #(
-        "timestamp",
-        int(
-          utc_now()
-          |> to_unix,
-        ),
-      ),
+      #("timestamp", int(now())),
     ])
     |> json.to_string
 
