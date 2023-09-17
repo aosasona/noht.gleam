@@ -5,6 +5,7 @@ pub type ApiError {
   BadRequest
   NotFound
   InternalServerError
+  MethodNotAllowed
   CustomError(String, Int)
 }
 
@@ -16,6 +17,7 @@ pub fn get_error(err: ApiError) -> JSONError {
   case err {
     BadRequest -> make_error("Oops, you sent a bad request", 400)
     NotFound -> make_error("The requested resource was not found", 404)
+    MethodNotAllowed -> make_error("Method is not allowed", 405)
     CustomError(message, code) -> make_error(message, code)
     _ -> make_error("Internal Server Error", 500)
   }
