@@ -3,7 +3,6 @@ import api/error
 import api/respond
 import api/middleware
 import handlers/ping.{handle_ping}
-import gleam/http
 import gleam/http/request.{Request}
 import gleam/http/response.{Response}
 import gleam/option.{None}
@@ -11,8 +10,8 @@ import mist.{Connection, ResponseData}
 import sqlight
 
 pub fn router(req: api.Request) -> Response(ResponseData) {
-  case #(req.method, req.path) {
-    #(http.Get, ["ping"]) -> handle_ping()
+  case req.path {
+    ["ping"] -> handle_ping(req)
     _ -> respond.with_err(err: error.NotFound, errors: None)
   }
 }
@@ -22,7 +21,7 @@ pub fn app(
   database database: sqlight.Connection,
 ) -> Response(ResponseData) {
   use <- middleware.log_request(request)
-  use request <- middleware.convert_string_body(request)
+  use request <- middleware.convert_body_to_string(request)
   use request <- middleware.authenticate(request, database)
   use request <- middleware.transform_to_api_request(request, database)
   router(request)

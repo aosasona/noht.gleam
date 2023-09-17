@@ -30,7 +30,7 @@ pub fn log_request(
   response
 }
 
-pub fn convert_string_body(
+pub fn convert_body_to_string(
   request: Request(Connection),
   next: fn(Request(String)) -> Response(ResponseData),
 ) -> Response(ResponseData) {
