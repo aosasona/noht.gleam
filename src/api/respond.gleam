@@ -11,7 +11,7 @@ type NullableJson =
 fn respond(res: #(Int, String)) -> Response(ResponseData) {
   let #(code, body) = res
   response.new(code)
-  |> response.set_header("Content-Type", "application/json")
+  |> response.set_header("content-type", "application/json")
   |> response.set_body(mist.Bytes(bit_builder.from_string(body)))
 }
 
