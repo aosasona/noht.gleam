@@ -1,14 +1,13 @@
 import api/error
 import api/api
+import lib/token
 import lib/logger
 import gleam/http
 import gleam/string
-import gleam/int
 import gleam/bit_string
 import gleam/http/request.{Request}
 import gleam/http/response.{Response}
 import gleam/option.{None, Option, Some}
-import gleam/result
 import sqlight
 import mist.{Connection, ResponseData}
 import api/respond
@@ -34,7 +33,7 @@ pub fn convert_body_to_string(
   request: Request(Connection),
   next: fn(Request(String)) -> Response(ResponseData),
 ) -> Response(ResponseData) {
-  case mist.read_body(request, 1024 * 1024 * 32) {
+  case mist.read_body(request, 1024 * 1024 * 16) {
     Ok(req) -> {
       case bit_string.to_string(req.body) {
         Ok(body) -> {
@@ -49,22 +48,27 @@ pub fn convert_body_to_string(
   }
 }
 
-// TODO: handle authentication properly i.e only allow sessions younger than 14 days or last used within the last 5 days
 pub fn authenticate(
   request: Request(String),
-  _db: sqlight.Connection,
+  db: sqlight.Connection,
   next: fn(#(Request(String), Option(Int))) -> Response(ResponseData),
 ) -> Response(ResponseData) {
-  let user_id: Option(Int) = case request.get_header(request, "Authorization") {
-    Ok(uid) ->
-      uid
-      |> int.parse
-      |> result.unwrap(or: 0)
-      |> Some
+  let auth_token = case request.get_header(request, "Authorization") {
+    Ok(tk) -> Some(tk)
     Error(_) -> None
   }
 
-  case user_id {
+  let uid = case auth_token {
+    Some(auth_token) -> {
+      case token.verify(db: db, token: auth_token) {
+        Ok(user) -> Some(user.id)
+        Error(_) -> None
+      }
+    }
+    None -> None
+  }
+
+  case uid {
     Some(uid) -> {
       next(#(request, Some(uid)))
     }
