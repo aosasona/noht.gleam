@@ -1,4 +1,5 @@
 import api/error
+import gleam/list
 import gleam/http/response.{Response}
 import gleam/bit_builder
 import gleam/json.{Json, bool, int, null, object, string, to_string}
@@ -17,7 +18,7 @@ fn respond(res: #(Int, String)) -> Response(ResponseData) {
 
 pub fn with_err(
   err err_type: error.ApiError,
-  errors errors: Option(List(#(String, Json))),
+  errors errors: List(#(String, Json)),
 ) -> Response(ResponseData) {
   let #(code, message) = error.get_error(err_type)
   respond(#(
@@ -28,9 +29,9 @@ pub fn with_err(
       #("error", string(message)),
       #(
         "errors",
-        case errors {
-          Some(errors) -> object(errors)
-          None -> null()
+        case list.is_empty(errors) {
+          False -> object(errors)
+          True -> null()
         },
       ),
     ])

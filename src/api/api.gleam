@@ -1,6 +1,6 @@
 import api/respond
-import api/error.{ApiError}
-import lib/logger
+import api/error
+import gleam/json
 import gleam/dynamic.{Decoder}
 import gleam/list
 import gleam/string
@@ -32,7 +32,7 @@ pub fn require_method(
     False ->
       respond.with_err(
         err: error.MethodNotAllowed(request.method, request.path),
-        errors: None,
+        errors: [],
       )
   }
 }
@@ -43,7 +43,7 @@ pub fn require_user(
 ) -> HttpResponse(ResponseData) {
   case request.user_id {
     Some(_) -> next()
-    None -> respond.with_err(err: error.Unauthenticated, errors: None)
+    None -> respond.with_err(err: error.Unauthenticated, errors: [])
   }
 }
 
@@ -61,17 +61,26 @@ pub fn require_json(
               expected: "application/json",
               provided: value,
             ),
-            errors: None,
+            errors: [],
           )
       }
     Error(_) ->
       respond.with_err(
         err: error.ClientError("No content-type header present in request"),
-        errors: None,
+        errors: [],
       )
   }
 }
 
-pub fn to_json(request: Request, to target: Decoder(a)) -> Result(a, ApiError) {
-  todo
+pub fn to_json(
+  request: Request,
+  decoder: Decoder(a),
+  next: fn(a) -> HttpResponse(ResponseData),
+) -> HttpResponse(ResponseData) {
+  case json.decode(from: request.body, using: decoder) {
+    Ok(value) -> next(value)
+    Error(_) -> {
+      respond.with_err(err: error.UnprocessableEntity, errors: [])
+    }
+  }
 }

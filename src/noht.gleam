@@ -23,8 +23,8 @@ pub fn main() {
   |> mist.port(port)
   |> mist.start_http
 
+  // this is required to put the main process to sleep so that the server can keep handling requests
   process.sleep_forever()
-  // sqlight.close(db)
 }
 
 fn load_port() -> Int {

@@ -41,10 +41,10 @@ pub fn convert_body_to_string(
           |> request.set_body(body)
           |> next
         }
-        Error(_) -> respond.with_err(err: error.BadRequest, errors: None)
+        Error(_) -> respond.with_err(err: error.BadRequest, errors: [])
       }
     }
-    Error(_) -> respond.with_err(err: error.BadRequest, errors: None)
+    Error(_) -> respond.with_err(err: error.BadRequest, errors: [])
   }
 }
 
