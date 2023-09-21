@@ -8,12 +8,14 @@ import mist.{ResponseData}
 
 pub fn sign_up(request: api.Request) -> Response(ResponseData) {
   use <- api.require_method(request, Post)
+  use <- api.require_json(request)
 
   respond.with_json(message: "sign up", data: None, meta: None)
 }
 
 pub fn sign_in(request: api.Request) -> Response(ResponseData) {
   use <- api.require_method(request, Post)
+  use <- api.require_json(request)
 
   respond.with_json(message: "sign in", data: None, meta: None)
 }

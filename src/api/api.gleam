@@ -1,6 +1,9 @@
 import api/respond
 import api/error.{ApiError}
+import lib/logger
 import gleam/dynamic.{Decoder}
+import gleam/list
+import gleam/string
 import gleam/http
 import gleam/http/response.{Response as HttpResponse}
 import gleam/option.{None, Option, Some}
@@ -9,9 +12,9 @@ import sqlight
 
 pub type Request {
   Request(
+    headers: List(#(String, String)),
     method: http.Method,
     path: List(String),
-    headers: List(#(String, String)),
     body: String,
     db: sqlight.Connection,
     user_id: Option(Int),
@@ -44,7 +47,30 @@ pub fn require_user(
   }
 }
 
-// require_json method to ensure that the request body is JSON and the header is set to application/json
+pub fn require_json(
+  request: Request,
+  next: fn() -> HttpResponse(ResponseData),
+) -> HttpResponse(ResponseData) {
+  case list.key_find(request.headers, "content-type") {
+    Ok(value) ->
+      case string.lowercase(value) {
+        "application/json" -> next()
+        _ ->
+          respond.with_err(
+            err: error.InvalidContentType(
+              expected: "application/json",
+              provided: value,
+            ),
+            errors: None,
+          )
+      }
+    Error(_) ->
+      respond.with_err(
+        err: error.ClientError("No content-type header present in request"),
+        errors: None,
+      )
+  }
+}
 
 pub fn to_json(request: Request, to target: Decoder(a)) -> Result(a, ApiError) {
   todo

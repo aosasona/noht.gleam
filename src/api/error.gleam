@@ -16,6 +16,7 @@ pub type ApiError {
   InternalServerError
   MethodNotAllowed(method: http.Method, path: List(String))
   ClientError(message: String)
+  InvalidContentType(provided: String, expected: String)
   CustomError(String, Int)
   SqlightError(sqlight.Error)
 }
@@ -47,6 +48,11 @@ pub fn get_error(err: ApiError) -> HTTPError {
     ClientError(message) -> make_error(message, 400)
     CustomError(message, code) -> make_error(message, code)
     Forbidden -> make_error("You don't have permission to do that", 403)
+    InvalidContentType(provided, expected) -> {
+      let message =
+        "Invalid Content-Type header. Expected " <> expected <> ", got " <> provided
+      make_error(message, 415)
+    }
     NotFound -> make_error("The requested resource was not found", 404)
     MethodNotAllowed(method, path_parts) -> {
       let path = string.join(path_parts, "/")

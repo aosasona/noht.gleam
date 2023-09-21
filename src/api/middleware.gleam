@@ -84,8 +84,8 @@ pub fn transform_to_api_request(
   let #(request, user_id) = request_with_auth
 
   next(api.Request(
-    method: request.method,
     headers: request.headers,
+    method: request.method,
     path: request.path_segments(request),
     body: request.body,
     db: db,
