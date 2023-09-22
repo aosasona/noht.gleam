@@ -33,7 +33,7 @@ pub fn sign_up(request: api.Request) -> Response(ResponseData) {
 
   use body <- api.to_json(request, schema_decoder)
 
-  // there has to be a better way to do this but I'm not sure what it is yet
+  // TODO: replace with validation module
   let validation_err = case
     body.username,
     body.email,

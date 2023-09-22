@@ -10,10 +10,10 @@ pub type ApiError {
   BadRequest
   BadAuthToken
   Forbidden
+  InternalServerError
   Unauthenticated
   UnprocessableEntity
   NotFound
-  InternalServerError
   MethodNotAllowed(method: http.Method, path: List(String))
   ClientError(message: String)
   InvalidContentType(provided: String, expected: String)
@@ -23,21 +23,6 @@ pub type ApiError {
 
 fn make_error(message: String, code: Int) -> HTTPError {
   #(code, message)
-}
-
-fn method_to_string(method: http.Method) -> String {
-  case method {
-    http.Get -> "GET"
-    http.Post -> "POST"
-    http.Put -> "PUT"
-    http.Delete -> "DELETE"
-    http.Patch -> "PATCH"
-    http.Options -> "OPTIONS"
-    http.Head -> "HEAD"
-    http.Connect -> "CONNECT"
-    http.Trace -> "TRACE"
-    http.Other(method) -> method
-  }
 }
 
 pub fn get_error(err: ApiError) -> HTTPError {
@@ -56,7 +41,10 @@ pub fn get_error(err: ApiError) -> HTTPError {
     NotFound -> make_error("The requested resource was not found", 404)
     MethodNotAllowed(method, path_parts) -> {
       let path = string.join(path_parts, "/")
-      make_error("Cannot " <> method_to_string(method) <> " /" <> path, 405)
+      make_error(
+        "Cannot " <> http.method_to_string(method) <> " /" <> path,
+        405,
+      )
     }
     SqlightError(err) -> {
       // log the error and return a generic error

@@ -1,7 +1,5 @@
-import lib/logger
 import lib/database
 import gleam/int
-import gleam/string
 import gleam/result
 import gleam/erlang/process
 import gleam/erlang/os
@@ -14,9 +12,6 @@ pub fn main() {
   let db = database.init()
 
   let assert Ok(_) = database.with_connection(db, database.migrate_schema)
-
-  string.concat(["Starting server on port ", int.to_string(port)])
-  |> logger.info
 
   router.app(request: _, database: db)
   |> mist.new
