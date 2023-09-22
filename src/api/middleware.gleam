@@ -1,5 +1,5 @@
 import api/error
-import api/api
+import api/api.{Context}
 import lib/token
 import lib/logger
 import gleam/http
@@ -79,11 +79,11 @@ pub fn authenticate(
 pub fn transform_to_api_request(
   request_with_auth: #(Request(String), Option(Int)),
   db: sqlight.Connection,
-  next: fn(api.Request) -> Response(ResponseData),
+  next: fn(Context) -> Response(ResponseData),
 ) -> Response(ResponseData) {
   let #(request, user_id) = request_with_auth
 
-  next(api.Request(
+  next(Context(
     headers: request.headers,
     method: request.method,
     path: request.path_segments(request),

@@ -1,5 +1,6 @@
 import api/respond
 import api/error
+import lib/validator.{Field, FieldError}
 import gleam/json
 import gleam/dynamic.{Decoder}
 import gleam/list
@@ -10,8 +11,8 @@ import gleam/option.{None, Option, Some}
 import mist.{ResponseData}
 import sqlight
 
-pub type Request {
-  Request(
+pub type Context {
+  Context(
     headers: List(#(String, String)),
     method: http.Method,
     path: List(String),
@@ -23,35 +24,35 @@ pub type Request {
 
 // https://github.com/lpil/wisp/blob/aaeae8da058f732bdb17c1d99761326bb0c1a0e5/src/wisp.gleam#L683
 pub fn require_method(
-  request: Request,
+  ctx: Context,
   method: http.Method,
   next: fn() -> HttpResponse(ResponseData),
 ) -> HttpResponse(ResponseData) {
-  case request.method == method {
+  case ctx.method == method {
     True -> next()
     False ->
       respond.with_err(
-        err: error.MethodNotAllowed(request.method, request.path),
+        err: error.MethodNotAllowed(ctx.method, ctx.path),
         errors: [],
       )
   }
 }
 
 pub fn require_user(
-  request: Request,
+  ctx: Context,
   next: fn() -> HttpResponse(ResponseData),
 ) -> HttpResponse(ResponseData) {
-  case request.user_id {
+  case ctx.user_id {
     Some(_) -> next()
     None -> respond.with_err(err: error.Unauthenticated, errors: [])
   }
 }
 
 pub fn require_json(
-  request: Request,
+  ctx: Context,
   next: fn() -> HttpResponse(ResponseData),
 ) -> HttpResponse(ResponseData) {
-  case list.key_find(request.headers, "content-type") {
+  case list.key_find(ctx.headers, "content-type") {
     Ok(value) ->
       case string.lowercase(value) {
         "application/json" -> next()
@@ -73,14 +74,32 @@ pub fn require_json(
 }
 
 pub fn to_json(
-  request: Request,
+  ctx: Context,
   decoder: Decoder(a),
   next: fn(a) -> HttpResponse(ResponseData),
 ) -> HttpResponse(ResponseData) {
-  case json.decode(from: request.body, using: decoder) {
+  case json.decode(from: ctx.body, using: decoder) {
     Ok(value) -> next(value)
     Error(_) -> {
       respond.with_err(err: error.UnprocessableEntity, errors: [])
     }
+  }
+}
+
+pub fn validate_body(
+  fields: List(Field),
+  next: fn() -> HttpResponse(ResponseData),
+) -> HttpResponse(ResponseData) {
+  let errors =
+    validator.validate_many(fields)
+    |> validator.to_object
+
+  case list.length(errors) > 0 {
+    True ->
+      respond.with_err(
+        err: error.ClientError("some fields are invalid"),
+        errors: errors,
+      )
+    False -> next()
   }
 }

@@ -1,4 +1,4 @@
-import api/api
+import api/api.{Context}
 import api/error
 import api/respond
 import api/middleware
@@ -9,13 +9,13 @@ import gleam/http/response.{Response}
 import mist.{Connection, ResponseData}
 import sqlight
 
-pub fn router(req: api.Request) -> Response(ResponseData) {
-  case req.path {
-    ["ping"] -> handle_ping(req)
+pub fn router(ctx: Context) -> Response(ResponseData) {
+  case ctx.path {
+    ["ping"] -> handle_ping(ctx)
     ["auth", ..path] ->
       case path {
-        ["sign-up"] -> auth.sign_up(req)
-        ["sign-in"] -> auth.sign_in(req)
+        ["sign-up"] -> auth.sign_up(ctx)
+        ["sign-in"] -> auth.sign_in(ctx)
       }
     _ -> respond.with_err(err: error.NotFound, errors: [])
   }
