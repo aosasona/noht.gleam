@@ -79,7 +79,7 @@ pub fn validate_field(
 fn match(value value: String, rule rule: Rule) -> MatchResult {
   case rule {
     Email -> email(value)
-    EqualTo(name, value) -> equal_to(name, value, value)
+    EqualTo(name, to) -> equal_to(name, value, to)
     MinLength(min) -> min_length(value, min)
     MaxLength(max) -> max_length(value, max)
     Required -> required(value)
