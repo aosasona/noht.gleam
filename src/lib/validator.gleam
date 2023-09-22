@@ -1,14 +1,16 @@
 import gleam/int
 import gleam/regex
 import gleam/list
+import gleam/json.{Json, array, null, string}
 import gleam/string
 
 // This is all primarily for string fields, but we could extend it to other types later
 pub type Rule {
-  Required
+  Email
+  EqualTo(String)
   MinLength(Int)
   MaxLength(Int)
-  Email
+  Required
 }
 
 pub type Field {
@@ -25,11 +27,21 @@ pub type FieldError {
   NoFieldError
 }
 
+pub fn to_object(errors: List(FieldError)) -> List(#(String, Json)) {
+  errors
+  |> list.map(fn(error) {
+    case error {
+      FieldError(name, errors) -> #(name, array(from: errors, of: string))
+      NoFieldError -> #("", null())
+    }
+  })
+}
+
 /// Validate a list of fields
 pub fn validate_multiple(fields: List(Field)) -> List(FieldError) {
   fields
   |> list.map(fn(field) {
-    validate_field(field.name, field.rules)
+    validate_field(field.value, field.rules)
     |> fn(result) {
       case result {
         #(True, errors) -> FieldError(name: field.name, errors: errors)
@@ -42,11 +54,11 @@ pub fn validate_multiple(fields: List(Field)) -> List(FieldError) {
 
 /// Validate a list of rules on a field
 pub fn validate_field(
-  field field: String,
+  value value: String,
   rules rules: List(Rule),
 ) -> #(Bool, List(String)) {
   rules
-  |> list.map(fn(rule) { match(field: field, rule: rule) })
+  |> list.map(fn(rule) { match(value: value, rule: rule) })
   |> list.filter(fn(error) { error != Passed })
   |> list.map(fn(error) {
     case error {
@@ -63,43 +75,51 @@ pub fn validate_field(
 }
 
 // Validate a single rule on a field
-fn match(field field: String, rule rule: Rule) -> MatchResult {
+fn match(value value: String, rule rule: Rule) -> MatchResult {
   case rule {
-    Required -> required(field)
-    MinLength(min) -> min_length(field, min)
-    MaxLength(max) -> max_length(field, max)
-    Email -> email(field)
+    Email -> email(value)
+    EqualTo(value) -> equal_to(value, value)
+    MinLength(min) -> min_length(value, min)
+    MaxLength(max) -> max_length(value, max)
+    Required -> required(value)
   }
 }
 
-fn required(field: _) -> MatchResult {
-  case field {
-    field if field == "" -> Failed("required")
+fn equal_to(value: String, other: String) -> MatchResult {
+  case value == other {
+    True -> Passed
+    False -> Failed("must match")
+  }
+}
+
+fn required(value: String) -> MatchResult {
+  case value {
+    value if value == "" -> Failed("required")
     _ -> Passed
   }
 }
 
-fn min_length(field: String, min: Int) -> MatchResult {
-  case string.length(field) < min {
+fn min_length(value: String, min: Int) -> MatchResult {
+  case string.length(value) < min {
     True -> Failed("must be at least " <> int.to_string(min) <> " characters")
     _ -> Passed
   }
 }
 
-fn max_length(field: _, max: Int) -> MatchResult {
-  case string.length(field) > max {
+fn max_length(value: String, max: Int) -> MatchResult {
+  case string.length(value) > max {
     True -> Failed("must be at most " <> int.to_string(max) <> " characters")
     _ -> Passed
   }
 }
 
-fn email(field: _) -> MatchResult {
+fn email(value: String) -> MatchResult {
   let valid = case
     regex.from_string(
       "/^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)*$/",
     )
   {
-    Ok(re) -> regex.check(with: re, content: field)
+    Ok(re) -> regex.check(with: re, content: value)
     Error(_) -> False
   }
 

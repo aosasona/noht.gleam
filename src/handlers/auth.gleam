@@ -2,8 +2,9 @@ import api/api
 import api/error
 import api/respond
 // import lib/schemas/user.{Email}
-import gleam/string
+import lib/validator.{Email, EqualTo, Field, MaxLength, MinLength, Required}
 import gleam/dynamic
+import gleam/list
 import gleam/http.{Post}
 import gleam/http/response.{Response}
 import gleam/option.{None}
@@ -33,26 +34,29 @@ pub fn sign_up(request: api.Request) -> Response(ResponseData) {
 
   use body <- api.to_json(request, schema_decoder)
 
-  // TODO: replace with validation module
-  let validation_err = case
-    body.username,
-    body.email,
-    body.password,
-    body.confirm_password
-  {
-    "", _, _, _ -> "username is required"
-    _, "", _, _ -> "email is required"
-    _, _, "", _ -> "password is required"
-    _, _, _, "" -> "confirm_password is required"
-    _, _, _, _ ->
-      case body.password != body.confirm_password {
-        True -> "password and confirm_password must match"
-        False -> ""
-      }
-  }
+  let validation_errors =
+    validator.validate_multiple([
+      Field(name: "username", value: body.username, rules: [Required]),
+      Field(name: "email", value: body.email, rules: [Required, Email]),
+      Field(
+        name: "password",
+        value: body.password,
+        rules: [Required, MinLength(8), MaxLength(32)],
+      ),
+      Field(
+        name: "confirm_password",
+        value: body.confirm_password,
+        rules: [Required, EqualTo(body.password)],
+      ),
+    ])
+    |> validator.to_object
 
-  case validation_err != "" {
-    True -> respond.with_err(err: error.ClientError(validation_err), errors: [])
+  case list.length(validation_errors) > 0 {
+    True ->
+      respond.with_err(
+        err: error.ClientError("some fields are invalid"),
+        errors: validation_errors,
+      )
     False -> respond.with_json(message: "sign up", data: None, meta: None)
   }
 }
