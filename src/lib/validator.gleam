@@ -1,13 +1,14 @@
 import gleam/int
-import gleam/regex
-import gleam/list
 import gleam/json.{Json, array, null, string}
+import gleam/list
+import gleam/order
+import gleam/regex
 import gleam/string
 
 // This is all primarily for string fields, but we could extend it to other types later
 pub type Rule {
   Email
-  EqualTo(String)
+  EqualTo(name: String, value: String)
   MinLength(Int)
   MaxLength(Int)
   Required
@@ -37,8 +38,8 @@ pub fn to_object(errors: List(FieldError)) -> List(#(String, Json)) {
   })
 }
 
-/// Validate a list of fields
-pub fn validate_multiple(fields: List(Field)) -> List(FieldError) {
+// Validate a list of fields
+pub fn validate_many(fields: List(Field)) -> List(FieldError) {
   fields
   |> list.map(fn(field) {
     validate_field(field.value, field.rules)
@@ -52,7 +53,7 @@ pub fn validate_multiple(fields: List(Field)) -> List(FieldError) {
   |> list.filter(fn(result) { result != NoFieldError })
 }
 
-/// Validate a list of rules on a field
+// Validate a list of rules on a field
 pub fn validate_field(
   value value: String,
   rules rules: List(Rule),
@@ -78,17 +79,17 @@ pub fn validate_field(
 fn match(value value: String, rule rule: Rule) -> MatchResult {
   case rule {
     Email -> email(value)
-    EqualTo(value) -> equal_to(value, value)
+    EqualTo(name, value) -> equal_to(name, value, value)
     MinLength(min) -> min_length(value, min)
     MaxLength(max) -> max_length(value, max)
     Required -> required(value)
   }
 }
 
-fn equal_to(value: String, other: String) -> MatchResult {
-  case value == other {
-    True -> Passed
-    False -> Failed("must match")
+fn equal_to(name: String, value: String, other: String) -> MatchResult {
+  case string.compare(value, other) {
+    order.Eq -> Passed
+    _ -> Failed("must match `" <> name <> "` field")
   }
 }
 
@@ -115,9 +116,7 @@ fn max_length(value: String, max: Int) -> MatchResult {
 
 fn email(value: String) -> MatchResult {
   let valid = case
-    regex.from_string(
-      "/^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)*$/",
-    )
+    regex.from_string("^([a-zA-Z0-9._%-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,})$")
   {
     Ok(re) -> regex.check(with: re, content: value)
     Error(_) -> False
