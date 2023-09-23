@@ -12,12 +12,24 @@ import gleam/option.{None, Some}
 import mist.{ResponseData}
 import sqlight
 
-type BodySchema {
+type SignUpSchema {
   SignUpSchema(
     username: String,
     email: String,
     password: String,
     confirm_password: String,
+  )
+}
+
+type SignInSchema {
+  SignInSchema(identifier: String, password: String)
+}
+
+fn signin_decoder() {
+  dynamic.decode2(
+    SignInSchema,
+    dynamic.field("identifier", dynamic.string),
+    dynamic.field("password", dynamic.string),
   )
 }
 
@@ -35,9 +47,12 @@ pub fn sign_up(ctx: Context) -> Response(ResponseData) {
   use <- api.require_method(ctx, Post)
   use <- api.require_json(ctx)
   use body <- api.to_json(ctx, signup_decoder())
-
   use <- api.validate_body([
-    Field(name: "username", value: body.username, rules: [Required]),
+    Field(
+      name: "username",
+      value: body.username,
+      rules: [Required, MinLength(4)],
+    ),
     Field(name: "email", value: body.email, rules: [Required, Email]),
     Field(
       name: "password",
@@ -76,6 +91,19 @@ pub fn sign_up(ctx: Context) -> Response(ResponseData) {
 pub fn sign_in(ctx: Context) -> Response(ResponseData) {
   use <- api.require_method(ctx, Post)
   use <- api.require_json(ctx)
+  use body <- api.to_json(ctx, signin_decoder())
+  use <- api.validate_body([
+    Field(
+      name: "identifier",
+      value: body.identifier,
+      rules: [Required, MinLength(4)],
+    ),
+    Field(
+      name: "password",
+      value: body.password,
+      rules: [Required, MinLength(6), MaxLength(32)],
+    ),
+  ])
 
   respond.with_json(message: "sign in", data: None, meta: None)
 }

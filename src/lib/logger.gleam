@@ -1,6 +1,6 @@
 import gleam/io
 import gleam/erlang.{Millisecond}
-import gleam/string as g_string
+import gleam/string as gleam_string
 import gleam/int as g_int
 import gleam/json.{int, object, string}
 
@@ -25,10 +25,7 @@ pub fn now() -> Int {
 }
 
 pub fn format_duration(duration: Int) -> String {
-  case duration >= 1000 {
-    True -> g_string.append(g_int.to_string(duration), "ms")
-    False -> g_string.append(g_int.to_string(duration), "μs")
-  }
+  gleam_string.append(g_int.to_string(duration), "ms")
 }
 
 pub fn log(level: Level, message: String) {
