@@ -1,10 +1,12 @@
 import api/api.{Context}
 import api/error
 import api/respond
-import lib/schemas/user
 import lib/argon2
+import lib/schemas/user
+import lib/token
 import lib/validator.{Email, EqualTo, Field, MaxLength, MinLength, Required}
 import gleam/dynamic
+import gleam/json
 import gleam/string
 import gleam/http.{Post}
 import gleam/http/response.{Response}
@@ -23,6 +25,11 @@ type SignUpSchema {
 
 type SignInSchema {
   SignInSchema(identifier: String, password: String)
+}
+
+type Found {
+  Found(by: String)
+  NotFound
 }
 
 fn signin_decoder() {
@@ -66,7 +73,7 @@ pub fn sign_up(ctx: Context) -> Response(ResponseData) {
     ),
   ])
 
-  use <- check_if_user_exists(ctx.db, body.email, body.username, False)
+  use <- ensure_user_doesnt_exist(ctx.db, body.email, body.username)
 
   case
     user.create(
@@ -105,20 +112,57 @@ pub fn sign_in(ctx: Context) -> Response(ResponseData) {
     ),
   ])
 
-  respond.with_json(message: "sign in", data: None, meta: None)
+  use user <- match_credentials(
+    ctx.db,
+    string.trim(body.identifier),
+    body.password,
+  )
+
+  case token.generate(db: ctx.db, uid: user.id) {
+    Ok(tk) ->
+      respond.with_json(
+        message: "sign in",
+        data: Some(json.object([#("session_token", json.string(tk))])),
+        meta: None,
+      )
+    Error(err) -> respond.with_err(err: err, errors: [])
+  }
 }
 
-type Found {
-  Found(by: String)
-  NotFound
+fn match_credentials(
+  db: sqlight.Connection,
+  identifier: String,
+  password: String,
+  next: fn(user.User) -> Response(ResponseData),
+) -> Response(ResponseData) {
+  let user =
+    user.find_or(
+      db: db,
+      or: [user.Email(identifier), user.Username(identifier)],
+    )
+
+  case user {
+    Ok(u) ->
+      case argon2.compare_password(password, u.password) {
+        True -> next(u)
+        False ->
+          respond.with_err(
+            err: error.ClientError("invalid credentials"),
+            errors: [],
+          )
+      }
+    Error(_) ->
+      respond.with_err(
+        err: error.ClientError("invalid credentials"),
+        errors: [],
+      )
+  }
 }
 
-fn check_if_user_exists(
+fn ensure_user_doesnt_exist(
   db: sqlight.Connection,
   email: String,
   username: String,
-  // this is used to specify if we expect the user to exist or not when the function is called
-  expect: Bool,
   next: fn() -> Response(ResponseData),
 ) -> Response(ResponseData) {
   let status = case
@@ -131,22 +175,13 @@ fn check_if_user_exists(
   }
 
   case status {
-    NotFound ->
-      case expect {
-        True ->
-          respond.with_err(err: error.ClientError("user not found"), errors: [])
-        False -> next()
-      }
+    NotFound -> next()
     Found(by) ->
-      case expect {
-        True -> next()
-        False ->
-          respond.with_err(
-            err: error.ClientError(
-              "an account with this " <> by <> " already exists",
-            ),
-            errors: [],
-          )
-      }
+      respond.with_err(
+        err: error.ClientError(
+          "an account with this " <> by <> " already exists",
+        ),
+        errors: [],
+      )
   }
 }

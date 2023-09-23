@@ -3,6 +3,7 @@ import lib/logger
 import gleam/int
 import gleam/json.{Json}
 import gleam/list
+import gleam/string
 import gleam/dynamic
 import sqlight
 
@@ -95,6 +96,41 @@ pub fn find_one(
   case rows {
     Ok([user]) -> Ok(user)
     Ok(_) -> Error(error.ClientError("No account found with that" <> field))
+    Error(error) -> {
+      logger.error(error.message)
+      Error(error.InternalServerError)
+    }
+  }
+}
+
+pub fn find_or(
+  db db: sqlight.Connection,
+  or or: List(FindBy),
+) -> Result(User, ApiError) {
+  let fields =
+    or
+    |> list.map(fn(by) {
+      let #(field_name, _) = get_find_params(by)
+      field_name
+    })
+    |> string.join(with: " = ? OR ") <> " = ?"
+
+  let values =
+    or
+    |> list.map(fn(by) {
+      let #(_, value) = get_find_params(by)
+      value
+    })
+
+  let query =
+    "SELECT id, username, email, password, UNIXEPOCH(created_at), UNIXEPOCH(updated_at) FROM users WHERE " <> fields <> ";"
+
+  let rows =
+    sqlight.query(query, on: db, with: values, expecting: user_decoder())
+
+  case rows {
+    Ok([user]) -> Ok(user)
+    Ok(_) -> Error(error.ClientError("user not found"))
     Error(error) -> {
       logger.error(error.message)
       Error(error.InternalServerError)
