@@ -48,8 +48,10 @@ pub fn save(
 
   case rows {
     Ok([row]) -> Ok(row)
-    Ok(rest, ..) -> {
-      logger.error("Expected 1 row, got " <> int.to_string(list.length(rest)))
+    Ok([_, ..rest]) -> {
+      logger.error(
+        "Expected 1 row, got " <> int.to_string(list.length(rest) + 1),
+      )
       Error(error.InternalServerError)
     }
     Error(error) -> Error(error)
