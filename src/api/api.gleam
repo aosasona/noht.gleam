@@ -1,6 +1,6 @@
 import api/respond
 import api/error
-import lib/validator.{Field, FieldError}
+import lib/validator.{Field}
 import gleam/json
 import gleam/dynamic.{Decoder}
 import gleam/list

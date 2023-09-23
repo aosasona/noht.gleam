@@ -2,7 +2,7 @@ import api/error
 import gleam/list
 import gleam/http/response.{Response}
 import gleam/bit_builder
-import gleam/json.{Json, bool, int, null, object, string, to_string}
+import gleam/json.{Json, array, bool, int, null, object, string, to_string}
 import gleam/option.{None, Option, Some}
 import mist.{ResponseData}
 
@@ -31,7 +31,7 @@ pub fn with_err(
         "errors",
         case list.is_empty(errors) {
           False -> object(errors)
-          True -> null()
+          True -> array(from: [], of: object)
         },
       ),
     ])
