@@ -8,7 +8,7 @@ import lib/validator.{Email, EqualTo, Field, MaxLength, MinLength, Required}
 import gleam/dynamic
 import gleam/json
 import gleam/string
-import gleam/http.{Post}
+import gleam/http.{Get, Post}
 import gleam/http/response.{Response}
 import gleam/option.{None, Some}
 import mist.{ResponseData}
@@ -87,7 +87,7 @@ pub fn sign_up(ctx: Context) -> Response(ResponseData) {
   {
     Ok(u) ->
       respond.with_json(
-        message: "welcome aboard!",
+        message: "Account created successfully!",
         data: Some(user.as_json(u)),
         meta: None,
       )
@@ -121,8 +121,23 @@ pub fn sign_in(ctx: Context) -> Response(ResponseData) {
   case token.generate(db: ctx.db, uid: user.id) {
     Ok(tk) ->
       respond.with_json(
-        message: "sign in",
+        message: "Welcome back, " <> user.username <> "!",
         data: Some(json.object([#("session_token", json.string(tk))])),
+        meta: None,
+      )
+    Error(err) -> respond.with_err(err: err, errors: [])
+  }
+}
+
+pub fn me(ctx: Context) -> Response(ResponseData) {
+  use <- api.require_method(ctx, Get)
+  use uid <- api.require_user(ctx)
+
+  case user.find_one(db: ctx.db, by: user.ID(uid)) {
+    Ok(u) ->
+      respond.with_json(
+        message: "Returning current user",
+        data: Some(user.as_json(u)),
         meta: None,
       )
     Error(err) -> respond.with_err(err: err, errors: [])

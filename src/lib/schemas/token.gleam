@@ -13,11 +13,11 @@ pub type Token {
 fn token_decoder() -> dynamic.Decoder(Token) {
   dynamic.decode5(
     Token,
-    dynamic.field(0, dynamic.int),
-    dynamic.field(1, dynamic.int),
-    dynamic.field(2, dynamic.string),
-    dynamic.field(3, dynamic.int),
-    dynamic.field(4, dynamic.int),
+    dynamic.element(0, dynamic.int),
+    dynamic.element(1, dynamic.int),
+    dynamic.element(2, dynamic.string),
+    dynamic.element(3, dynamic.int),
+    dynamic.element(4, dynamic.int),
   )
 }
 
@@ -60,33 +60,37 @@ pub fn save(
 
 pub fn find_by_value(
   db db: sqlight.Connection,
-  token token: String,
+  token tk: String,
 ) -> Result(Token, ApiError) {
   // A token is only considered valid if it was issued in the last 14 days, and has been used in the last 3 days
   // This is not really secure, you want to use something more strict in a real app
   let query =
-    "SELECT
-      id, user_id, token, issued_at, last_used_at
-    FROM _auth_tokens
-    WHERE
-      token = $1
-      AND issued_at >= strftime('%s', 'now', '-14 days')
-      AND last_used_at <= strftime('%s', 'now', '-3 days');
-    "
+    "SELECT id, user_id, token, UNIXEPOCH(issued_at), UNIXEPOCH(last_used_at) FROM _auth_tokens WHERE token = ?;"
 
   let rows =
     sqlight.query(
       query,
       on: db,
-      with: [sqlight.text(token)],
+      with: [sqlight.text(tk)],
       expecting: token_decoder(),
     )
 
   case rows {
-    Ok([user]) -> Ok(user)
+    Ok([token]) -> {
+      case logger.now() - token.last_used_at >= 3 * 24 * 60 * 60 * 1000 {
+        True -> Error(error.RevokedAuthToken)
+        False ->
+          case logger.now() - token.issued_at >= 14 * 24 * 60 * 60 * 1000 {
+            True -> Error(error.ExpiredAuthToken)
+            False -> Ok(token)
+          }
+      }
+
+      Ok(token)
+    }
     Ok(_) -> Error(error.BadAuthToken)
     Error(error) -> {
-      logger.error(error.message)
+      logger.error("find_by_value: " <> error.message)
       Error(error.InternalServerError)
     }
   }

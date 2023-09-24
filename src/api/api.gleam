@@ -40,10 +40,10 @@ pub fn require_method(
 
 pub fn require_user(
   ctx: Context,
-  next: fn() -> HttpResponse(ResponseData),
+  next: fn(Int) -> HttpResponse(ResponseData),
 ) -> HttpResponse(ResponseData) {
   case ctx.user_id {
-    Some(_) -> next()
+    Some(uid) -> next(uid)
     None -> respond.with_err(err: error.Unauthenticated, errors: [])
   }
 }

@@ -53,8 +53,18 @@ pub fn authenticate(
   db: sqlight.Connection,
   next: fn(#(Request(String), Option(Int))) -> Response(ResponseData),
 ) -> Response(ResponseData) {
-  let auth_token = case request.get_header(request, "Authorization") {
-    Ok(tk) -> Some(tk)
+  let auth_token = case request.get_header(request, "authorization") {
+    Ok(tk) -> {
+      case string.split(tk, " ") {
+        [tk_type, token] -> {
+          case tk_type {
+            "Bearer" -> Some(token)
+            _ -> None
+          }
+        }
+        _ -> None
+      }
+    }
     Error(_) -> None
   }
 
