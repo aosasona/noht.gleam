@@ -42,6 +42,7 @@ pub fn migrate_schema(db: sqlight.Connection) -> Result(Nil, ApiError) {
       name TEXT NOT NULL,
       user_id INTEGER NOT NULL,
       parent_id INTEGER DEFAULT 0,
+      tags TEXT,
       created_at INTEGER NOT NULL DEFAULT CURRENT_TIMESTAMP,
       updated_at INTEGER NOT NULL DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (user_id) REFERENCES users (id),
@@ -50,9 +51,9 @@ pub fn migrate_schema(db: sqlight.Connection) -> Result(Nil, ApiError) {
 
     CREATE TABLE IF NOT EXISTS notes (
       id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-      title TEXT NOT NULL,
-      body TEXT NOT NULL,
-      folder_id INTEGER NOT NULL DEFAULT 0,
+      title TEXT NOT NULL DEFAULT 'Untitled',
+      body TEXT DEFAULT '',
+      folder_id INTEGER,
       user_id INTEGER NOT NULL,
       created_at INTEGER NOT NULL DEFAULT CURRENT_TIMESTAMP,
       updated_at INTEGER NOT NULL DEFAULT CURRENT_TIMESTAMP,

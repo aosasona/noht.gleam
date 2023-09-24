@@ -13,7 +13,7 @@ import handlers/notes
 pub fn router(ctx: Context) -> Response(ResponseData) {
   case ctx.path {
     ["ping"] -> handle_ping(ctx)
-    ["@me"] -> auth.me(ctx)
+    ["@me"] | ["me"] -> auth.me(ctx)
     ["auth", ..path] ->
       case path {
         ["sign-up"] -> auth.sign_up(ctx)

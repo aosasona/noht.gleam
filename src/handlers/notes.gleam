@@ -1,10 +1,19 @@
 import api/api.{Context}
 import api/error
 import api/respond
+import lib/schemas/note
+import lib/validator
 import gleam/int
+import gleam/json
+import gleam/dynamic
+import gleam/option.{None, Option, Some}
 import gleam/http.{Delete, Get, Patch, Post}
 import gleam/http/response.{Response}
 import mist.{ResponseData}
+
+type Body {
+  CreateNoteBody(title: String, body: String, folder_id: Option(Int))
+}
 
 pub fn handle_root(ctx: Context) -> Response(ResponseData) {
   case ctx.method {
@@ -42,11 +51,76 @@ pub fn handle_id(ctx: Context, note_id: String) -> Response(ResponseData) {
 }
 
 fn create(ctx: Context) -> Response(ResponseData) {
-  todo
+  use <- api.require_method(ctx, Post)
+  use uid <- api.require_user(ctx)
+  use <- api.require_json(ctx)
+  use body <- api.to_json(
+    ctx,
+    dynamic.decode3(
+      CreateNoteBody,
+      dynamic.field("title", dynamic.string),
+      dynamic.field("body", dynamic.string),
+      dynamic.field("folder_id", dynamic.optional(dynamic.int)),
+    ),
+  )
+
+  use <- api.validate_body([
+    validator.Field(
+      name: "title",
+      value: body.title,
+      rules: [
+        validator.Required,
+        validator.MinLength(1),
+        validator.MaxLength(255),
+      ],
+    ),
+    validator.Field(
+      name: "body",
+      value: body.body,
+      rules: [validator.MaxLength(65_535)],
+    ),
+  ])
+
+  note.create(
+    db: ctx.db,
+    input: note.Input(
+      title: body.title,
+      body: body.body,
+      folder_id: body.folder_id,
+      user_id: uid,
+    ),
+  )
+  |> fn(res) {
+    case res {
+      Ok(n) ->
+        respond.with_json(
+          code: 201,
+          message: "Note created!",
+          data: Some(note.as_json(n)),
+          meta: None,
+        )
+      Error(err) -> respond.with_err(err: err, errors: [])
+    }
+  }
 }
 
 fn get_all(ctx: Context) -> Response(ResponseData) {
-  todo
+  use <- api.require_method(ctx, Get)
+  use uid <- api.require_user(ctx)
+
+  case note.find_many(db: ctx.db, by: [note.User(uid)], condition: note.And) {
+    Ok(notes) ->
+      respond.with_json(
+        code: 200,
+        message: "Notes found!",
+        data: Some(
+          notes
+          |> json.array(of: note.as_json),
+        ),
+        meta: None,
+      )
+    Error(err) -> respond.with_err(err: err, errors: [])
+  }
 }
 
 pub fn get_one(ctx: Context, note_id: Int) -> Response(ResponseData) {

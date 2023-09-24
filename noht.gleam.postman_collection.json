@@ -172,16 +172,6 @@
 				{
 					"name": "Get Current User",
 					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "PdZ1KI77z4ARNPRNuQ566",
-									"type": "string"
-								}
-							]
-						},
 						"method": "GET",
 						"header": [
 							{
@@ -259,6 +249,149 @@
 			]
 		},
 		{
+			"name": "Notes",
+			"item": [
+				{
+					"name": "Create note",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Note Uno\",\n    \"body\": \"This is a note!!\",\n    \"folder_id\": null\n}"
+						},
+						"url": {
+							"raw": "{{API_URL}}/notes",
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"notes"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "201",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"title\": \"Note Uno\",\n    \"body\": \"This is a note!!\",\n    \"folder_id\": null\n}"
+								},
+								"url": {
+									"raw": "{{API_URL}}/notes",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"notes"
+									]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "content-length",
+									"value": "198"
+								},
+								{
+									"key": "content-type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"ok\": true,\n    \"code\": 201,\n    \"message\": \"Note created!\",\n    \"data\": {\n        \"id\": 6,\n        \"title\": \"Note Uno\",\n        \"body\": \"This is a note!!\",\n        \"folder_id\": null,\n        \"user_id\": 6,\n        \"created_at\": 1695587944,\n        \"updated_at\": 1695587944\n    },\n    \"meta\": null\n}"
+						}
+					]
+				},
+				{
+					"name": "Get all notes",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{API_URL}}/notes",
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"notes"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "200",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{API_URL}}/notes",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"notes"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "content-length",
+									"value": "471"
+								},
+								{
+									"key": "content-type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"ok\": true,\n    \"code\": 200,\n    \"message\": \"Notes found!\",\n    \"data\": [\n        {\n            \"id\": 4,\n            \"title\": \"Hello, world!\",\n            \"body\": \"This is a note!\",\n            \"folder_id\": null,\n            \"user_id\": 6,\n            \"created_at\": 1695581112,\n            \"updated_at\": 1695581112\n        },\n        {\n            \"id\": 5,\n            \"title\": \"My note\",\n            \"body\": \"Here is another note :)\",\n            \"folder_id\": null,\n            \"user_id\": 6,\n            \"created_at\": 1695586456,\n            \"updated_at\": 1695586456\n        },\n        {\n            \"id\": 6,\n            \"title\": \"Note Uno\",\n            \"body\": \"This is a note!!\",\n            \"folder_id\": null,\n            \"user_id\": 6,\n            \"created_at\": 1695587944,\n            \"updated_at\": 1695587944\n        }\n    ],\n    \"meta\": null\n}"
+						}
+					]
+				}
+			]
+		},
+		{
 			"name": "Ping",
 			"request": {
 				"method": "GET",
@@ -276,6 +409,16 @@
 			"response": []
 		}
 	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "PeV3oMJbT0qgyHNFv3xMb",
+				"type": "string"
+			}
+		]
+	},
 	"event": [
 		{
 			"listen": "prerequest",

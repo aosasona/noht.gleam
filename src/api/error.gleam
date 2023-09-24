@@ -51,7 +51,7 @@ pub fn get_error(err: ApiError) -> HTTPError {
     MethodNotAllowed(method, path_parts) -> {
       let path = string.join(path_parts, "/")
       make_error(
-        "Cannot " <> http.method_to_string(method) <> " /" <> path,
+        "Cannot " <> string.uppercase(http.method_to_string(method)) <> " /" <> path,
         405,
       )
     }
