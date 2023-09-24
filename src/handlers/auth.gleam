@@ -87,6 +87,7 @@ pub fn sign_up(ctx: Context) -> Response(ResponseData) {
   {
     Ok(u) ->
       respond.with_json(
+        code: 201,
         message: "Account created successfully!",
         data: Some(user.as_json(u)),
         meta: None,
@@ -121,6 +122,7 @@ pub fn sign_in(ctx: Context) -> Response(ResponseData) {
   case token.generate(db: ctx.db, uid: user.id) {
     Ok(tk) ->
       respond.with_json(
+        code: 200,
         message: "Welcome back, " <> user.username <> "!",
         data: Some(json.object([#("session_token", json.string(tk))])),
         meta: None,
@@ -136,6 +138,7 @@ pub fn me(ctx: Context) -> Response(ResponseData) {
   case user.find_one(db: ctx.db, by: user.ID(uid)) {
     Ok(u) ->
       respond.with_json(
+        code: 200,
         message: "Forgot who you were, huh?",
         data: Some(user.as_json(u)),
         meta: None,

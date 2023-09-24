@@ -1,0 +1,29 @@
+# fly.toml app configuration file generated for noht on 2023-09-24T03:27:30+01:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = "noht"
+primary_region = "lhr"
+
+[deploy]
+strategy = "rolling"
+
+[experimental]
+auto_rollback = true
+
+[env]
+PORT = 8080
+
+[[services]]
+  internal_port = 8080
+  protocol = "tcp"
+
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ["app"]

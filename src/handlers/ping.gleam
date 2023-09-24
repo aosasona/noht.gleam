@@ -7,5 +7,5 @@ import mist.{ResponseData}
 
 pub fn handle_ping(ctx: Context) -> Response(ResponseData) {
   use <- api.require_method(ctx, Get)
-  respond.with_json(message: "pong", data: None, meta: None)
+  respond.with_json(code: 200, message: "pong", data: None, meta: None)
 }

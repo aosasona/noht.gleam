@@ -40,15 +40,16 @@ pub fn with_err(
 }
 
 pub fn with_json(
+  code code: Int,
   message message: String,
   data data: NullableJson,
   meta meta: NullableJson,
 ) -> Response(ResponseData) {
   respond(#(
-    200,
+    code,
     object([
       #("ok", bool(True)),
-      #("code", int(200)),
+      #("code", int(code)),
       #("message", string(message)),
       #(
         "data",
