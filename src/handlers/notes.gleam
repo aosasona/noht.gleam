@@ -24,9 +24,9 @@ pub fn handle_id(ctx: Context, note_id: String) -> Response(ResponseData) {
   case id {
     Ok(id) ->
       case ctx.method {
-        Get -> get_note(ctx, id)
-        Patch -> edit_note(ctx, id)
-        Delete -> delete_note(ctx, id)
+        Get -> get_one(ctx, id)
+        Patch -> edit(ctx, id)
+        Delete -> delete(ctx, id)
         _ ->
           respond.with_err(
             err: error.MethodNotAllowed(method: ctx.method, path: ctx.path),
@@ -49,14 +49,14 @@ fn get_all(ctx: Context) -> Response(ResponseData) {
   todo
 }
 
-pub fn get_note(ctx: Context, note_id: Int) -> Response(ResponseData) {
+pub fn get_one(ctx: Context, note_id: Int) -> Response(ResponseData) {
   todo
 }
 
-pub fn edit_note(ctx: Context, note_id: Int) -> Response(ResponseData) {
+pub fn edit(ctx: Context, note_id: Int) -> Response(ResponseData) {
   todo
 }
 
-pub fn delete_note(ctx: Context, note_id: Int) -> Response(ResponseData) {
+pub fn delete(ctx: Context, note_id: Int) -> Response(ResponseData) {
   todo
 }
