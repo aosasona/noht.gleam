@@ -84,7 +84,7 @@ fn make_where_clause(
 
 pub fn find_one(
   db db: sqlight.Connection,
-  by by: List(Column),
+  where by: List(Column),
   condition condition: Condition,
 ) -> Result(Option(Note), ApiError) {
   let #(where, values) = make_where_clause(condition, by)
@@ -108,7 +108,7 @@ pub fn find_one(
 
 pub fn find_many(
   db db: sqlight.Connection,
-  by by: List(Column),
+  where by: List(Column),
   condition condition: Condition,
 ) -> Result(List(Note), ApiError) {
   let #(where, values) = make_where_clause(condition, by)
@@ -160,20 +160,25 @@ pub fn create(
 
 pub fn delete(
   db db: sqlight.Connection,
-  by by: List(Column),
+  where by: List(Column),
   condition condition: Condition,
-) -> Result(Option(Note), ApiError) {
+) -> Result(Int, ApiError) {
   let #(where, values) = make_where_clause(condition, by)
 
-  let query = "DELETE FROM notes WHERE " <> where <> " LIMIT 1;"
+  let query = "DELETE FROM notes WHERE " <> where <> " RETURNING id;"
   logger.info(query)
 
   let rows =
-    sqlight.query(query, on: db, with: values, expecting: note_decoder())
+    sqlight.query(
+      query,
+      on: db,
+      with: values,
+      expecting: dynamic.element(0, dynamic.int),
+    )
 
   case rows {
-    Ok([row]) -> Ok(Some(row))
-    Ok(_) -> Ok(None)
+    Ok([row]) -> Ok(row)
+    Ok(_) -> Error(error.CustomError("Requested note not found", 400))
     Error(e) -> {
       logger.error(e.message)
       Error(error.InternalServerError)

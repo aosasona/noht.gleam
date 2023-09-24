@@ -1,7 +1,7 @@
 import api/api.{Context}
 import api/error
 import api/respond
-import lib/schemas/note
+import lib/schemas/note.{And}
 import lib/validator
 import gleam/int
 import gleam/json
@@ -108,7 +108,7 @@ fn get_all(ctx: Context) -> Response(ResponseData) {
   use <- api.require_method(ctx, Get)
   use uid <- api.require_user(ctx)
 
-  case note.find_many(db: ctx.db, by: [note.User(uid)], condition: note.And) {
+  case note.find_many(db: ctx.db, where: [note.User(uid)], condition: And) {
     Ok(notes) ->
       respond.with_json(
         code: 200,
@@ -130,8 +130,8 @@ pub fn get_one(ctx: Context, note_id: Int) -> Response(ResponseData) {
   case
     note.find_one(
       db: ctx.db,
-      by: [note.ID(note_id), note.User(uid)],
-      condition: note.And,
+      where: [note.ID(note_id), note.User(uid)],
+      condition: And,
     )
   {
     Ok(res) -> {
@@ -153,11 +153,28 @@ pub fn get_one(ctx: Context, note_id: Int) -> Response(ResponseData) {
   }
 }
 
-pub fn edit(ctx: Context, note_id: Int) -> Response(ResponseData) {
-  todo
-}
-
 pub fn delete(ctx: Context, note_id: Int) -> Response(ResponseData) {
   use <- api.require_method(ctx, Delete)
   use uid <- api.require_user(ctx)
+
+  case
+    note.delete(
+      db: ctx.db,
+      where: [note.ID(note_id), note.User(uid)],
+      condition: And,
+    )
+  {
+    Ok(nid) ->
+      respond.with_json(
+        code: 200,
+        message: "Note deleted!",
+        data: Some(json.object([#("id", json.int(nid))])),
+        meta: None,
+      )
+    Error(err) -> respond.with_err(err: err, errors: [])
+  }
+}
+
+pub fn edit(ctx: Context, note_id: Int) -> Response(ResponseData) {
+  todo
 }
