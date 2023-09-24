@@ -124,7 +124,33 @@ fn get_all(ctx: Context) -> Response(ResponseData) {
 }
 
 pub fn get_one(ctx: Context, note_id: Int) -> Response(ResponseData) {
-  todo
+  use <- api.require_method(ctx, Get)
+  use uid <- api.require_user(ctx)
+
+  case
+    note.find_one(
+      db: ctx.db,
+      by: [note.ID(note_id), note.User(uid)],
+      condition: note.And,
+    )
+  {
+    Ok(res) -> {
+      let #(d, code) = case res {
+        Some(d) -> #(note.as_json(d), 200)
+        None -> #(json.null(), 400)
+      }
+      respond.with_json(
+        code: code,
+        message: case code {
+          200 -> "Returning data for note with ID " <> int.to_string(note_id)
+          _ -> "Note with ID " <> int.to_string(note_id) <> " not found"
+        },
+        data: Some(d),
+        meta: None,
+      )
+    }
+    Error(err) -> respond.with_err(err: err, errors: [])
+  }
 }
 
 pub fn edit(ctx: Context, note_id: Int) -> Response(ResponseData) {
@@ -132,5 +158,6 @@ pub fn edit(ctx: Context, note_id: Int) -> Response(ResponseData) {
 }
 
 pub fn delete(ctx: Context, note_id: Int) -> Response(ResponseData) {
-  todo
+  use <- api.require_method(ctx, Delete)
+  use uid <- api.require_user(ctx)
 }

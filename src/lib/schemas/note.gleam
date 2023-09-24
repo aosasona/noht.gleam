@@ -84,12 +84,14 @@ fn make_where_clause(
 
 pub fn find_one(
   db db: sqlight.Connection,
-  by by: Column,
+  by by: List(Column),
   condition condition: Condition,
 ) -> Result(Option(Note), ApiError) {
-  let #(where, values) = make_where_clause(condition, [by])
+  let #(where, values) = make_where_clause(condition, by)
+
   let query =
     "SELECT id, title, body, folder_id, user_id, UNIXEPOCH(created_at), UNIXEPOCH(updated_at) FROM notes WHERE " <> where <> " LIMIT 1;"
+  logger.info(query)
 
   let rows =
     sqlight.query(query, on: db, with: values, expecting: note_decoder())
@@ -110,8 +112,10 @@ pub fn find_many(
   condition condition: Condition,
 ) -> Result(List(Note), ApiError) {
   let #(where, values) = make_where_clause(condition, by)
+
   let query =
     "SELECT id, title, body, folder_id, user_id, UNIXEPOCH(created_at), UNIXEPOCH(updated_at) FROM notes WHERE " <> where <> ";"
+  logger.info(query)
 
   let rows =
     sqlight.query(query, on: db, with: values, expecting: note_decoder())
@@ -147,6 +151,29 @@ pub fn create(
   case rows {
     Ok([row]) -> Ok(row)
     Ok(_) -> Error(error.CustomError("Failed to create note", 500))
+    Error(e) -> {
+      logger.error(e.message)
+      Error(error.InternalServerError)
+    }
+  }
+}
+
+pub fn delete(
+  db db: sqlight.Connection,
+  by by: List(Column),
+  condition condition: Condition,
+) -> Result(Option(Note), ApiError) {
+  let #(where, values) = make_where_clause(condition, by)
+
+  let query = "DELETE FROM notes WHERE " <> where <> " LIMIT 1;"
+  logger.info(query)
+
+  let rows =
+    sqlight.query(query, on: db, with: values, expecting: note_decoder())
+
+  case rows {
+    Ok([row]) -> Ok(Some(row))
+    Ok(_) -> Ok(None)
     Error(e) -> {
       logger.error(e.message)
       Error(error.InternalServerError)
