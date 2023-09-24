@@ -2,12 +2,13 @@ import api/api.{Context}
 import api/error
 import api/respond
 import api/middleware
-import handlers/ping.{handle_ping}
-import handlers/auth
 import gleam/http/request.{Request}
 import gleam/http/response.{Response}
 import mist.{Connection, ResponseData}
 import sqlight
+import handlers/ping.{handle_ping}
+import handlers/auth
+import handlers/notes
 
 pub fn router(ctx: Context) -> Response(ResponseData) {
   case ctx.path {
@@ -18,6 +19,8 @@ pub fn router(ctx: Context) -> Response(ResponseData) {
         ["sign-up"] -> auth.sign_up(ctx)
         ["sign-in"] -> auth.sign_in(ctx)
       }
+    ["notes"] -> notes.handle_root(ctx)
+    ["notes", id] -> notes.handle_id(ctx, id)
     _ -> respond.with_err(err: error.NotFound, errors: [])
   }
 }

@@ -136,7 +136,7 @@ pub fn me(ctx: Context) -> Response(ResponseData) {
   case user.find_one(db: ctx.db, by: user.ID(uid)) {
     Ok(u) ->
       respond.with_json(
-        message: "Returning current user",
+        message: "Forgot who you were, huh?",
         data: Some(user.as_json(u)),
         meta: None,
       )
