@@ -4,6 +4,7 @@ import api/respond
 import lib/schemas/note.{And}
 import lib/validator
 import gleam/int
+import gleam/list
 import gleam/json
 import gleam/dynamic
 import gleam/option.{None, Option, Some}
@@ -11,8 +12,16 @@ import gleam/http.{Delete, Get, Patch, Post}
 import gleam/http/response.{Response}
 import mist.{ResponseData}
 
-type Body {
+type CreateNoteBody {
   CreateNoteBody(title: String, body: String, folder_id: Option(Int))
+}
+
+type UpdateNoteBody {
+  UpdateNoteBody(
+    title: Option(String),
+    body: Option(String),
+    folder_id: Option(Int),
+  )
 }
 
 pub fn handle_root(ctx: Context) -> Response(ResponseData) {
@@ -34,7 +43,7 @@ pub fn handle_id(ctx: Context, note_id: String) -> Response(ResponseData) {
     Ok(id) ->
       case ctx.method {
         Get -> get_one(ctx, id)
-        Patch -> edit(ctx, id)
+        Patch -> update(ctx, id)
         Delete -> delete(ctx, id)
         _ ->
           respond.with_err(
@@ -175,6 +184,63 @@ pub fn delete(ctx: Context, note_id: Int) -> Response(ResponseData) {
   }
 }
 
-pub fn edit(ctx: Context, note_id: Int) -> Response(ResponseData) {
-  todo
+pub fn update(ctx: Context, note_id: Int) -> Response(ResponseData) {
+  use <- api.require_method(ctx, Post)
+  use uid <- api.require_user(ctx)
+  use <- api.require_json(ctx)
+  use body <- api.to_json(
+    ctx,
+    dynamic.decode3(
+      UpdateNoteBody,
+      dynamic.field("title", dynamic.optional(dynamic.string)),
+      dynamic.field("body", dynamic.optional(dynamic.string)),
+      dynamic.field("folder_id", dynamic.optional(dynamic.int)),
+    ),
+  )
+
+  let validations =
+    []
+    |> fn(v) {
+      case body.title {
+        Some(title) ->
+          list.append(
+            v,
+            [
+              validator.Field(
+                name: "title",
+                value: title,
+                rules: [
+                  validator.Required,
+                  validator.MinLength(1),
+                  validator.MaxLength(255),
+                ],
+              ),
+            ],
+          )
+        None -> v
+      }
+    }
+    |> fn(v) {
+      case body.body {
+        Some(body) ->
+          list.append(
+            v,
+            [
+              validator.Field(
+                name: "body",
+                value: body,
+                rules: [validator.MaxLength(65_535)],
+              ),
+            ],
+          )
+        None -> v
+      }
+    }
+
+  // TODO: add folder_id validation with custom regex validator rule
+  use <- api.validate_body(validations)
+
+  // TODO: perform update
+
+  respond.with_json(code: 200, message: "Note updated!", data: None, meta: None)
 }

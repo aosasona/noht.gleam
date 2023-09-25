@@ -2,6 +2,7 @@ import api/error.{ApiError}
 import lib/logger
 import gleam/dynamic
 import gleam/list
+import gleam/map
 import gleam/string
 import gleam/json.{Json}
 import gleam/option.{None, Option, Some}
@@ -21,6 +22,10 @@ pub type Note {
 
 pub type Input {
   Input(title: String, body: String, folder_id: Option(Int), user_id: Int)
+}
+
+pub type Update {
+  Update(title: Option(String), body: Option(String), folder_id: Option(Int))
 }
 
 pub type Condition {
@@ -175,6 +180,57 @@ pub fn delete(
       with: values,
       expecting: dynamic.element(0, dynamic.int),
     )
+
+  case rows {
+    Ok([row]) -> Ok(row)
+    Ok(_) -> Error(error.CustomError("Requested note not found", 400))
+    Error(e) -> {
+      logger.error(e.message)
+      Error(error.InternalServerError)
+    }
+  }
+}
+
+pub fn update(
+  db db: sqlight.Connection,
+  data data: Update,
+  where by: List(Column),
+  condition condition: Condition,
+) -> Result(Note, ApiError) {
+  let new_data =
+    [#("title", data.title), #("body", data.body)]
+    |> list.filter(for: fn(field) -> Bool {
+      case field {
+        #(_, Some(_)) -> True
+        #(_, None) -> False
+      }
+    })
+    |> list.map(fn(field) -> #(String, sqlight.Value) {
+      case field {
+        #(name, Some(value)) -> #(name, sqlight.text(value))
+        #(_, None) -> #("", sqlight.null())
+      }
+    })
+    |> fn(fields) -> List(#(String, sqlight.Value)) {
+      case data.folder_id {
+        Some(fid) -> list.append(fields, [#("folder_id", sqlight.int(fid))])
+        None -> fields
+      }
+    }
+    |> map.from_list
+
+  let #(fields, set_values) = #(map.keys(new_data), map.values(new_data))
+  let #(where, where_values) = make_where_clause(condition, by)
+
+  // TODO: review
+  let query =
+    "UPDATE notes SET " <> string.join(fields, with: " = ?, ") <> " = ? WHERE " <> where <> " RETURNING id, title, body, folder_id, user_id, UNIXEPOCH(created_at), UNIXEPOCH(updated_at);"
+
+  let values = list.append(set_values, where_values)
+  logger.info(query)
+
+  let rows =
+    sqlight.query(query, on: db, with: values, expecting: note_decoder())
 
   case rows {
     Ok([row]) -> Ok(row)
