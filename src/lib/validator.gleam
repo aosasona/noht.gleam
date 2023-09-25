@@ -12,6 +12,7 @@ pub type Rule {
   MinLength(Int)
   MaxLength(Int)
   Required
+  Regex(regex: String, error: String)
 }
 
 pub type Field {
@@ -83,6 +84,19 @@ fn match(value value: String, rule rule: Rule) -> MatchResult {
     MinLength(min) -> min_length(value, min)
     MaxLength(max) -> max_length(value, max)
     Required -> required(value)
+    Regex(r, error) -> regex(r, value, error)
+  }
+}
+
+fn regex(re: String, value: String, error: String) -> MatchResult {
+  let valid = case regex.from_string(re) {
+    Ok(re) -> regex.check(with: re, content: value)
+    Error(_) -> False
+  }
+
+  case valid {
+    True -> Passed
+    False -> Failed(error)
   }
 }
 
