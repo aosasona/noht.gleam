@@ -20,12 +20,16 @@ pub type Note {
   )
 }
 
-pub type Input {
-  Input(title: String, body: String, folder_id: Option(Int), user_id: Int)
+pub type InsertData {
+  InsertData(title: String, body: String, folder_id: Option(Int), user_id: Int)
 }
 
-pub type Update {
-  Update(title: Option(String), body: Option(String), folder_id: Option(Int))
+pub type UpdateData {
+  UpdateData(
+    title: Option(String),
+    body: Option(String),
+    folder_id: Option(Int),
+  )
 }
 
 pub type Condition {
@@ -136,7 +140,7 @@ pub fn find_many(
 
 pub fn create(
   db db: sqlight.Connection,
-  input input: Input,
+  input input: InsertData,
 ) -> Result(Note, ApiError) {
   let query =
     "INSERT INTO notes (title, body, folder_id, user_id) VALUES (?, ?, ?, ?) RETURNING id, title, body, folder_id, user_id, UNIXEPOCH(created_at), UNIXEPOCH(updated_at)"
@@ -193,7 +197,7 @@ pub fn delete(
 
 pub fn update(
   db db: sqlight.Connection,
-  data data: Update,
+  data data: UpdateData,
   where by: List(Column),
   condition condition: Condition,
 ) -> Result(Note, ApiError) {
@@ -208,6 +212,7 @@ pub fn update(
     |> list.map(fn(field) -> #(String, sqlight.Value) {
       case field {
         #(name, Some(value)) -> #(name, sqlight.text(value))
+        // this will never happen anyway since we have filtered out None values
         #(_, None) -> #("", sqlight.null())
       }
     })
@@ -222,19 +227,22 @@ pub fn update(
   let #(fields, set_values) = #(map.keys(new_data), map.values(new_data))
   let #(where, where_values) = make_where_clause(condition, by)
 
-  // TODO: review
   let query =
     "UPDATE notes SET " <> string.join(fields, with: " = ?, ") <> " = ? WHERE " <> where <> " RETURNING id, title, body, folder_id, user_id, UNIXEPOCH(created_at), UNIXEPOCH(updated_at);"
 
-  let values = list.append(set_values, where_values)
   logger.info(query)
 
   let rows =
-    sqlight.query(query, on: db, with: values, expecting: note_decoder())
+    sqlight.query(
+      query,
+      on: db,
+      with: list.append(set_values, where_values),
+      expecting: note_decoder(),
+    )
 
   case rows {
     Ok([row]) -> Ok(row)
-    Ok(_) -> Error(error.CustomError("Requested note not found", 400))
+    Ok(_) -> Error(error.CustomError("Requested note was not found", 400))
     Error(e) -> {
       logger.error(e.message)
       Error(error.InternalServerError)

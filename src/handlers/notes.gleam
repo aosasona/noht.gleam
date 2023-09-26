@@ -92,7 +92,7 @@ fn create(ctx: Context) -> Response(ResponseData) {
 
   note.create(
     db: ctx.db,
-    input: note.Input(
+    input: note.InsertData(
       title: body.title,
       body: body.body,
       folder_id: body.folder_id,
@@ -185,7 +185,7 @@ pub fn delete(ctx: Context, note_id: Int) -> Response(ResponseData) {
 }
 
 pub fn update(ctx: Context, note_id: Int) -> Response(ResponseData) {
-  use <- api.require_method(ctx, Post)
+  use <- api.require_method(ctx, Patch)
   use uid <- api.require_user(ctx)
   use <- api.require_json(ctx)
   use body <- api.to_json(
@@ -236,8 +236,28 @@ pub fn update(ctx: Context, note_id: Int) -> Response(ResponseData) {
         None -> v
       }
     }
+    |> fn(v) {
+      case body.folder_id {
+        Some(fid) ->
+          list.append(
+            v,
+            [
+              validator.Field(
+                name: "folder_id",
+                value: int.to_string(fid),
+                rules: [
+                  validator.Regex(
+                    regex: "^[0-9]+$",
+                    error: "must be an integer",
+                  ),
+                ],
+              ),
+            ],
+          )
+        None -> v
+      }
+    }
 
-  // TODO: add folder_id validation with custom regex validator rule
   use <- api.validate_body(validations)
 
   // TODO: perform update
