@@ -2,14 +2,18 @@ FROM ghcr.io/gleam-lang/gleam:v0.30.5-erlang-alpine
 
 COPY . /build/
 
+# Install dependencies required to compile the Gleam application
+RUN apk add gcc build-base elixir
+
 # Compile the Gleam application
 RUN cd /build \
-  && apk add gcc build-base elixir \
   && mix local.hex --force \
   && gleam export erlang-shipment \
   && mv build/erlang-shipment /app \
-  && rm -r /build \
-  && apk del gcc build-base
+  && rm -r /build
+
+# Clean up deps
+RUN apk del gcc build-base elixir
 
 # Permissions
 RUN addgroup -S noht \
