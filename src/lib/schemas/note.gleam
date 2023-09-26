@@ -242,7 +242,11 @@ pub fn update(
         Ok(_) -> Error(error.CustomError("Requested note was not found", 400))
         Error(e) -> {
           logger.error(e.message)
-          Error(error.InternalServerError)
+          case e.code {
+            sqlight.ConstraintForeignkey ->
+              Error(error.CustomError("The target folder does not exist", 400))
+            _ -> Error(error.InternalServerError)
+          }
         }
       }
     }

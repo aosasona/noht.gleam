@@ -7,12 +7,14 @@ import gleam/list
 import gleam/string
 import gleam/http
 import gleam/http/response.{Response as HttpResponse}
+import gleam/http/request.{Request as HttpRequest}
 import gleam/option.{None, Option, Some}
 import mist.{ResponseData}
 import sqlight
 
 pub type Context {
   Context(
+    original_request: HttpRequest(String),
     headers: List(#(String, String)),
     method: http.Method,
     path: List(String),

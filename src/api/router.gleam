@@ -9,6 +9,7 @@ import sqlight
 import handlers/ping.{handle_ping}
 import handlers/auth
 import handlers/notes
+import handlers/folders
 
 pub fn router(ctx: Context) -> Response(ResponseData) {
   case ctx.path {
@@ -21,6 +22,13 @@ pub fn router(ctx: Context) -> Response(ResponseData) {
       }
     ["notes"] -> notes.handle_root(ctx)
     ["notes", id] -> notes.handle_id(ctx, id)
+    ["folders"] -> folders.handle_root(ctx)
+    ["folders", id] -> folders.handle_id(ctx, id)
+    ["folders", id, ..rest] ->
+      case rest {
+        ["contents"] -> folders.get_contents(ctx, id)
+        ["subdirectories"] -> folders.get_subdirs(ctx, id)
+      }
     _ -> respond.with_err(err: error.NotFound, errors: [])
   }
 }
