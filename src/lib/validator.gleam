@@ -8,6 +8,7 @@ import gleam/string
 // This is all primarily for string fields, but we could extend it to other types later
 pub type Rule {
   Email
+  NotEqualTo(name: String, value: String)
   EqualTo(name: String, value: String)
   MinLength(Int)
   MaxLength(Int)
@@ -81,10 +82,18 @@ fn match(value value: String, rule rule: Rule) -> MatchResult {
   case rule {
     Email -> email(value)
     EqualTo(name, to) -> equal_to(name, value, to)
+    NotEqualTo(name, to) -> not_equal_to(name, value, to)
     MinLength(min) -> min_length(value, min)
     MaxLength(max) -> max_length(value, max)
     Required -> required(value)
     Regex(r, error) -> regex(r, value, error)
+  }
+}
+
+fn not_equal_to(name: String, value: String, other: String) -> MatchResult {
+  case string.compare(value, other) {
+    order.Eq -> Failed("must not match `" <> name <> "` field")
+    _ -> Passed
   }
 }
 

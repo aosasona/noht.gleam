@@ -260,7 +260,27 @@ pub fn update(ctx: Context, note_id: Int) -> Response(ResponseData) {
 
   use <- api.validate_body(validations)
 
-  // TODO: perform update
-
-  respond.with_json(code: 200, message: "Note updated!", data: None, meta: None)
+  case
+    note.update(
+      db: ctx.db,
+      data: note.UpdateData(
+        body: body.body,
+        title: body.title,
+        folder_id: body.folder_id,
+      ),
+      where: [note.ID(note_id), note.User(uid)],
+      condition: note.And,
+    )
+  {
+    Ok(#(updated_note, fields)) ->
+      respond.with_json(
+        code: 200,
+        message: "Note updated!",
+        data: Some(note.as_json(updated_note)),
+        meta: Some(json.object([
+          #("fields", json.array(from: fields, of: json.string)),
+        ])),
+      )
+    Error(e) -> respond.with_err(err: e, errors: [])
+  }
 }

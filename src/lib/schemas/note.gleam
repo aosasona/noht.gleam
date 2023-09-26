@@ -200,7 +200,7 @@ pub fn update(
   data data: UpdateData,
   where by: List(Column),
   condition condition: Condition,
-) -> Result(Note, ApiError) {
+) -> Result(#(Note, List(String)), ApiError) {
   let new_data =
     [#("title", data.title), #("body", data.body)]
     |> list.filter(for: fn(field) -> Bool {
@@ -232,21 +232,21 @@ pub fn update(
 
   logger.info(query)
 
-  let rows =
-    sqlight.query(
-      query,
-      on: db,
-      with: list.append(set_values, where_values),
-      expecting: note_decoder(),
-    )
-
-  case rows {
-    Ok([row]) -> Ok(row)
-    Ok(_) -> Error(error.CustomError("Requested note was not found", 400))
-    Error(e) -> {
-      logger.error(e.message)
-      Error(error.InternalServerError)
+  case list.length(fields) > 0 {
+    True -> {
+      let values = list.append(set_values, where_values)
+      case
+        sqlight.query(query, on: db, with: values, expecting: note_decoder())
+      {
+        Ok([row]) -> Ok(#(row, fields))
+        Ok(_) -> Error(error.CustomError("Requested note was not found", 400))
+        Error(e) -> {
+          logger.error(e.message)
+          Error(error.InternalServerError)
+        }
+      }
     }
+    False -> Error(error.CustomError("No fields to update", 400))
   }
 }
 
