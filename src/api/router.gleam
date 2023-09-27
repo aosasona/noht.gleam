@@ -20,15 +20,11 @@ pub fn router(ctx: Context) -> Response(ResponseData) {
         ["sign-up"] -> auth.sign_up(ctx)
         ["sign-in"] -> auth.sign_in(ctx)
       }
-    ["notes"] -> notes.handle_root(ctx)
-    ["notes", id] -> notes.handle_id(ctx, id)
-    ["folders"] -> folders.handle_root(ctx)
-    ["folders", id] -> folders.handle_id(ctx, id)
-    ["folders", id, ..rest] ->
-      case rest {
-        ["contents"] -> folders.get_contents(ctx, id)
-        ["subdirectories"] -> folders.get_subdirs(ctx, id)
-      }
+    ["notes"] -> notes.root(ctx)
+    ["notes", id] -> notes.id(ctx, id)
+    ["folders"] -> folders.root(ctx)
+    ["folders", id] -> folders.id(ctx, id)
+    ["folders", id, "children"] -> folders.get_children(ctx, id)
     _ -> respond.with_err(err: error.NotFound, errors: [])
   }
 }

@@ -24,7 +24,7 @@ type UpdateNoteBody {
   )
 }
 
-pub fn handle_root(ctx: Context) -> Response(ResponseData) {
+pub fn root(ctx: Context) -> Response(ResponseData) {
   case ctx.method {
     Get -> get_all(ctx)
     Post -> create(ctx)
@@ -36,7 +36,7 @@ pub fn handle_root(ctx: Context) -> Response(ResponseData) {
   }
 }
 
-pub fn handle_id(ctx: Context, note_id: String) -> Response(ResponseData) {
+pub fn id(ctx: Context, note_id: String) -> Response(ResponseData) {
   let id = int.parse(note_id)
 
   case id {

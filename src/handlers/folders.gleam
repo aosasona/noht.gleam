@@ -12,7 +12,7 @@ type CreateFolder {
   CreateFolder(name: String, parent_id: Option(Int))
 }
 
-pub fn handle_root(ctx: Context) -> Response(ResponseData) {
+pub fn root(ctx: Context) -> Response(ResponseData) {
   case ctx.method {
     Get -> get_all(ctx)
     Post -> create(ctx)
@@ -24,7 +24,7 @@ pub fn handle_root(ctx: Context) -> Response(ResponseData) {
   }
 }
 
-pub fn handle_id(ctx: Context, folder_id: String) -> Response(ResponseData) {
+pub fn id(ctx: Context, folder_id: String) -> Response(ResponseData) {
   let id = int.parse(folder_id)
 
   case id {
@@ -70,15 +70,7 @@ fn delete(ctx: Context, id: Int) -> Response(ResponseData) {
   todo
 }
 
-pub fn get_contents(ctx: Context, raw_id: String) -> Response(ResponseData) {
-  let id =
-    int.parse(raw_id)
-    |> result.unwrap(0)
-
-  todo
-}
-
-pub fn get_subdirs(ctx: Context, raw_id: String) -> Response(ResponseData) {
+pub fn get_children(ctx: Context, raw_id: String) -> Response(ResponseData) {
   let id =
     int.parse(raw_id)
     |> result.unwrap(0)

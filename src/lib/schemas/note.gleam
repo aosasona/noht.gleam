@@ -259,14 +259,8 @@ pub fn as_json(note: Note) -> Json {
     #("id", json.int(note.id)),
     #("title", json.string(note.title)),
     #("body", json.string(note.body)),
-    #(
-      "folder_id",
-      case note.folder_id {
-        Some(f_id) -> json.int(f_id)
-        None -> json.null()
-      },
-    ),
     #("user_id", json.int(note.user_id)),
+    #("folder_id", json.nullable(from: note.folder_id, of: json.int)),
     #("created_at", json.int(note.created_at)),
     #("updated_at", json.int(note.updated_at)),
   ])
