@@ -15,10 +15,10 @@ gleam_stdlib = "~> 0.30"
 gleam_http = "~> 3.5"
 gleam_erlang = "~> 0.22"
 mist = "~> 0.13"
-sqlight = "~> 0.7"
 gleam_json = "~> 0.6"
 ids = "~> 0.9"
 argon2_elixir = "~> 3.2"
+sqlight = "~> 0.8"
 
 [dev-dependencies]
 gleeunit = "~> 0.10"
