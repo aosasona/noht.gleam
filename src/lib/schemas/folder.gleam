@@ -108,8 +108,15 @@ pub fn folder_as_json(folder: Folder) -> Json {
 }
 
 fn child_as_json(child: Child) -> Json {
-  case child {
+  let t = case child {
+    SubFolder(_) -> "folder"
+    Note(_) -> "note"
+  }
+
+  let original = case child {
     SubFolder(folder) -> folder_as_json(folder)
     Note(note) -> note.as_json(note)
   }
+
+  json.object([#("type", json.string(t)), #("data", original)])
 }
