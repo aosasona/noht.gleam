@@ -2,6 +2,7 @@ import api/api.{Context}
 import api/error
 import api/respond
 import lib/validator
+import lib/schemas/folder
 import gleam/int
 import gleam/dynamic
 import gleam/result
@@ -21,29 +22,6 @@ pub fn root(ctx: Context) -> Response(ResponseData) {
     _ ->
       respond.with_err(
         err: error.MethodNotAllowed(method: ctx.method, path: ctx.path),
-        errors: [],
-      )
-  }
-}
-
-pub fn id(ctx: Context, folder_id: String) -> Response(ResponseData) {
-  let id = int.parse(folder_id)
-
-  case id {
-    Ok(id) ->
-      case ctx.method {
-        Get -> get_one(ctx, id)
-        Patch -> update(ctx, id)
-        Delete -> delete(ctx, id)
-        _ ->
-          respond.with_err(
-            err: error.MethodNotAllowed(method: ctx.method, path: ctx.path),
-            errors: [],
-          )
-      }
-    Error(_) ->
-      respond.with_err(
-        err: error.ClientError("Invalid note id, must be an integer"),
         errors: [],
       )
   }
@@ -85,7 +63,48 @@ fn create(ctx: Context) -> Response(ResponseData) {
     ),
   ])
 
-  respond.with_err(err: error.ClientError("Not implemented"), errors: [])
+  case
+    folder.create(
+      db: ctx.db,
+      input: folder.InsertData(
+        name: body.name,
+        parent_id: body.parent_id,
+        user_id: uid,
+      ),
+    )
+  {
+    Ok(f) ->
+      respond.with_json(
+        code: 201,
+        message: "Successfully created folder `" <> body.name <> "`",
+        data: Some(folder.folder_as_json(f)),
+        meta: None,
+      )
+    Error(err) -> respond.with_err(err: err, errors: [])
+  }
+}
+
+pub fn id(ctx: Context, folder_id: String) -> Response(ResponseData) {
+  let id = int.parse(folder_id)
+
+  case id {
+    Ok(id) ->
+      case ctx.method {
+        Get -> get_one(ctx, id)
+        Patch -> update(ctx, id)
+        Delete -> delete(ctx, id)
+        _ ->
+          respond.with_err(
+            err: error.MethodNotAllowed(method: ctx.method, path: ctx.path),
+            errors: [],
+          )
+      }
+    Error(_) ->
+      respond.with_err(
+        err: error.ClientError("Invalid note id, must be an integer"),
+        errors: [],
+      )
+  }
 }
 
 fn get_all(ctx: Context) -> Response(ResponseData) {

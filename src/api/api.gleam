@@ -99,7 +99,7 @@ pub fn validate_body(
   case list.length(errors) > 0 {
     True ->
       respond.with_err(
-        err: error.ClientError("some fields are invalid"),
+        err: error.ClientError("Some fields are invalid"),
         errors: errors,
       )
     False -> next()

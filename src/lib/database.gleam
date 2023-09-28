@@ -45,7 +45,9 @@ pub fn migrate_schema(db: sqlight.Connection) -> Result(Nil, ApiError) {
       created_at INTEGER NOT NULL DEFAULT CURRENT_TIMESTAMP,
       updated_at INTEGER NOT NULL DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (user_id) REFERENCES users (id),
-      FOREIGN KEY (parent_id) REFERENCES folders (id)
+      FOREIGN KEY (parent_id) REFERENCES folders (id),
+      UNIQUE (name, parent_id, user_id),
+      CHECK (parent_id IS NULL OR parent_id != id)
     );
 
     CREATE TABLE IF NOT EXISTS notes (

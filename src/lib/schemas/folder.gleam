@@ -41,12 +41,12 @@ pub type InsertData {
 fn folder_decoder() {
   dynamic.decode6(
     Folder,
-    dynamic.field("id", dynamic.int),
-    dynamic.field("name", dynamic.string),
-    dynamic.field("user_id", dynamic.int),
-    dynamic.field("parent_id", dynamic.optional(dynamic.int)),
-    dynamic.field("created_at", dynamic.int),
-    dynamic.field("updated_at", dynamic.int),
+    dynamic.element(0, dynamic.int),
+    dynamic.element(1, dynamic.string),
+    dynamic.element(2, dynamic.int),
+    dynamic.element(3, dynamic.optional(dynamic.int)),
+    dynamic.element(4, dynamic.int),
+    dynamic.element(5, dynamic.int),
   )
 }
 
@@ -78,7 +78,13 @@ pub fn create(
     Ok(_) -> Error(error.InternalServerError)
     Error(e) -> {
       logger.error(e.message)
-      Error(error.InternalServerError)
+      case e.code {
+        sqlight.ConstraintUnique ->
+          Error(error.ClientError("A folder with that name already exists"))
+        sqlight.ConstraintForeignkey | sqlight.ConstraintCheck ->
+          Error(error.ClientError("The parent folder does not exist"))
+        _ -> Error(error.InternalServerError)
+      }
     }
   }
 }
@@ -90,7 +96,7 @@ pub fn as_json(data: Data) -> Json {
   }
 }
 
-fn folder_as_json(folder: Folder) -> Json {
+pub fn folder_as_json(folder: Folder) -> Json {
   json.object([
     #("id", json.int(folder.id)),
     #("name", json.string(folder.name)),
