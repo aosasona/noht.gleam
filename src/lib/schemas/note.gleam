@@ -162,7 +162,11 @@ pub fn create(
     Ok(_) -> Error(error.InternalServerError)
     Error(e) -> {
       logger.error(e.message)
-      Error(error.InternalServerError)
+      case e.code {
+        sqlight.ConstraintForeignkey | sqlight.ConstraintCheck ->
+          Error(error.ClientError("The target folder does not exist"))
+        _ -> Error(error.InternalServerError)
+      }
     }
   }
 }

@@ -25,12 +25,11 @@ pub fn with_connection(
 }
 
 pub fn migrate_schema(db: sqlight.Connection) -> Result(Nil, ApiError) {
-  // `0` as a folder_id means it is uncategorized
   sqlight.exec(
     "
     CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-      username TEXT NOT NULL,
+      username TEXT NOT NULL UNIQUE,
       email TEXT NOT NULL UNIQUE,
       password TEXT NOT NULL,
       created_at INTEGER NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -69,7 +68,7 @@ pub fn migrate_schema(db: sqlight.Connection) -> Result(Nil, ApiError) {
       issued_at INTEGER NOT NULL DEFAULT CURRENT_TIMESTAMP,
       last_used_at INTEGER NOT NULL DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (user_id) REFERENCES users (id),
-      UNIQUE (token)
+      UNIQUE (token, user_id)
     );
     ",
     db,
