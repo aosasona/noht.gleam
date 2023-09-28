@@ -1,6 +1,7 @@
 import gleam/int
 import gleam/json.{Json, array, null, string}
 import gleam/list
+import gleam/option.{None, Option, Some}
 import gleam/order
 import gleam/regex
 import gleam/string
@@ -16,8 +17,10 @@ pub type Rule {
   Regex(regex: String, error: String)
 }
 
+// TODO: make this a StringField to enable other forms of validation later
 pub type Field {
   Field(name: String, value: String, rules: List(Rule))
+  NullableField(name: String, value: Option(String), rules: List(Rule))
 }
 
 pub type MatchResult {
@@ -44,7 +47,16 @@ pub fn to_object(errors: List(FieldError)) -> List(#(String, Json)) {
 pub fn validate_many(fields: List(Field)) -> List(FieldError) {
   fields
   |> list.map(fn(field) {
-    validate_field(field.value, field.rules)
+    let result = case field {
+      Field(_, value, rules) -> validate_field(value, rules)
+      NullableField(_, value, rules) ->
+        case value {
+          Some(value) -> validate_field(value, rules)
+          None -> #(False, [])
+        }
+    }
+
+    result
     |> fn(result) {
       case result {
         #(True, errors) -> FieldError(name: field.name, errors: errors)

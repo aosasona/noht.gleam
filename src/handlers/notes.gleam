@@ -198,67 +198,30 @@ pub fn update(ctx: Context, note_id: Int) -> Response(ResponseData) {
     ),
   )
 
-  let validations =
-    []
-    |> fn(v) {
-      case body.title {
-        Some(title) ->
-          list.append(
-            v,
-            [
-              validator.Field(
-                name: "title",
-                value: title,
-                rules: [
-                  validator.Required,
-                  validator.MinLength(1),
-                  validator.MaxLength(255),
-                ],
-              ),
-            ],
-          )
-        None -> v
-      }
-    }
-    |> fn(v) {
-      case body.body {
-        Some(body) ->
-          list.append(
-            v,
-            [
-              validator.Field(
-                name: "body",
-                value: body,
-                rules: [validator.MaxLength(65_535)],
-              ),
-            ],
-          )
-        None -> v
-      }
-    }
-    |> fn(v) {
-      case body.folder_id {
-        Some(fid) ->
-          list.append(
-            v,
-            [
-              validator.Field(
-                name: "folder_id",
-                value: int.to_string(fid),
-                rules: [
-                  validator.Regex(
-                    regex: "^[0-9]+$",
-                    error: "must be an integer",
-                  ),
-                ],
-              ),
-            ],
-          )
-        None -> v
-      }
-    }
-
-  use <- api.validate_body(validations)
+  use <- api.validate_body([
+    validator.NullableField(
+      name: "title",
+      value: body.title,
+      rules: [
+        validator.Required,
+        validator.MinLength(1),
+        validator.MaxLength(255),
+      ],
+    ),
+    validator.NullableField(
+      name: "body",
+      value: body.body,
+      rules: [validator.MaxLength(65_535)],
+    ),
+    validator.NullableField(
+      name: "folder_id",
+      value: case body.folder_id {
+        Some(fid) -> Some(int.to_string(fid))
+        None -> None
+      },
+      rules: [validator.Regex(regex: "^[0-9]+$", error: "must be an integer")],
+    ),
+  ])
 
   case
     note.update(
