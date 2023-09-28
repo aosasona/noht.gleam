@@ -159,7 +159,7 @@ pub fn create(
 
   case rows {
     Ok([row]) -> Ok(row)
-    Ok(_) -> Error(error.CustomError("Failed to create note", 500))
+    Ok(_) -> Error(error.InternalServerError)
     Error(e) -> {
       logger.error(e.message)
       Error(error.InternalServerError)
@@ -187,7 +187,7 @@ pub fn delete(
 
   case rows {
     Ok([row]) -> Ok(row)
-    Ok(_) -> Error(error.CustomError("Requested note not found", 400))
+    Ok(_) -> Error(error.InternalServerError)
     Error(e) -> {
       logger.error(e.message)
       Error(error.InternalServerError)
@@ -239,7 +239,7 @@ pub fn update(
         sqlight.query(query, on: db, with: values, expecting: note_decoder())
       {
         Ok([row]) -> Ok(#(row, fields))
-        Ok(_) -> Error(error.CustomError("Requested note was not found", 400))
+        Ok(_) -> Error(error.InternalServerError)
         Error(e) -> {
           logger.error(e.message)
           case e.code {

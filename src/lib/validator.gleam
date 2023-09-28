@@ -13,6 +13,7 @@ pub type Rule {
   EqualTo(name: String, value: String)
   MinLength(Int)
   MaxLength(Int)
+  Numeric
   Required
   Regex(regex: String, error: String)
 }
@@ -97,6 +98,7 @@ fn match(value value: String, rule rule: Rule) -> MatchResult {
     NotEqualTo(name, to) -> not_equal_to(name, value, to)
     MinLength(min) -> min_length(value, min)
     MaxLength(max) -> max_length(value, max)
+    Numeric -> regex("^([0-9]+)$", value, "must be numeric (0-9)")
     Required -> required(value)
     Regex(r, error) -> regex(r, value, error)
   }

@@ -188,6 +188,7 @@ pub fn update(ctx: Context, note_id: Int) -> Response(ResponseData) {
   use <- api.require_method(ctx, Patch)
   use uid <- api.require_user(ctx)
   use <- api.require_json(ctx)
+  validator.Numeric
   use body <- api.to_json(
     ctx,
     dynamic.decode3(
@@ -219,7 +220,7 @@ pub fn update(ctx: Context, note_id: Int) -> Response(ResponseData) {
         Some(fid) -> Some(int.to_string(fid))
         None -> None
       },
-      rules: [validator.Regex(regex: "^[0-9]+$", error: "must be an integer")],
+      rules: [validator.Numeric],
     ),
   ])
 

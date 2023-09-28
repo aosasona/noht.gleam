@@ -75,7 +75,7 @@ pub fn create(
 
   case rows {
     Ok([row]) -> Ok(row)
-    Ok(_) -> Error(error.CustomError("Failed to create note", 500))
+    Ok(_) -> Error(error.InternalServerError)
     Error(e) -> {
       logger.error(e.message)
       Error(error.InternalServerError)

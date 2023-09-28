@@ -1,15 +1,17 @@
 import api/api.{Context}
 import api/error
 import api/respond
+import lib/validator
 import gleam/int
+import gleam/dynamic
 import gleam/result
 import gleam/option.{None, Option, Some}
 import gleam/http.{Delete, Get, Patch, Post}
 import gleam/http/response.{Response}
 import mist.{ResponseData}
 
-type CreateFolder {
-  CreateFolder(name: String, parent_id: Option(Int))
+type CreateFolderBody {
+  CreateFolderBody(name: String, parent_id: Option(Int))
 }
 
 pub fn root(ctx: Context) -> Response(ResponseData) {
@@ -51,7 +53,39 @@ fn create(ctx: Context) -> Response(ResponseData) {
   use <- api.require_method(ctx, Post)
   use uid <- api.require_user(ctx)
   use <- api.require_json(ctx)
-  todo
+  use body <- api.to_json(
+    ctx,
+    dynamic.decode2(
+      CreateFolderBody,
+      dynamic.field("name", dynamic.string),
+      dynamic.field("parent_id", dynamic.optional(dynamic.int)),
+    ),
+  )
+  use <- api.validate_body([
+    validator.Field(
+      name: "name",
+      value: body.name,
+      rules: [
+        validator.Required,
+        validator.MinLength(1),
+        validator.MaxLength(255),
+        validator.Regex(
+          "^[a-zA-Z0-9_]+$",
+          error: "can only contain letters, numbers, and underscores",
+        ),
+      ],
+    ),
+    validator.NullableField(
+      name: "parent_id",
+      value: case body.parent_id {
+        Some(id) -> Some(int.to_string(id))
+        None -> None
+      },
+      rules: [validator.Numeric],
+    ),
+  ])
+
+  respond.with_err(err: error.ClientError("Not implemented"), errors: [])
 }
 
 fn get_all(ctx: Context) -> Response(ResponseData) {
