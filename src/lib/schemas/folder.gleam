@@ -2,6 +2,7 @@ import api/error.{ApiError}
 import lib/database.{And, Condition, Or}
 import lib/schemas/note.{Note}
 import lib/logger
+import gleam/io
 import gleam/string
 import gleam/list
 import gleam/dynamic
@@ -29,7 +30,7 @@ pub type Child {
 pub type Column {
   ID(Int)
   UserID(uid: Int)
-  ParentID(parent_id: Int)
+  ParentID(parent_id: Option(Int))
 }
 
 pub type InsertData {
@@ -56,7 +57,10 @@ fn get_find_params(by: Column) -> #(String, sqlight.Value) {
   case by {
     ID(id) -> #("id", sqlight.int(id))
     UserID(uid) -> #("user_id", sqlight.int(uid))
-    ParentID(parent_id) -> #("parent_id", sqlight.int(parent_id))
+    ParentID(parent_id) -> #(
+      "parent_id",
+      sqlight.nullable(sqlight.int, parent_id),
+    )
   }
 }
 
@@ -72,20 +76,27 @@ fn make_where_clause(
 
   let fields =
     columns
-    |> list.map(fn(col) -> String {
-      let #(name, _) = get_find_params(col)
-      name
+    |> list.map(fn(col) {
+      let #(col, v) = get_find_params(col)
+      col <> case v == sqlight.null() {
+        True -> " IS NULL"
+        False -> " = ?"
+      }
     })
-    |> string.join(with: " = ? " <> cond <> " ")
+    |> string.join(with: " " <> cond <> " ")
 
   let values =
     columns
+    |> list.filter(fn(col) {
+      let #(_, value) = get_find_params(col)
+      value != sqlight.null()
+    })
     |> list.map(fn(col) -> sqlight.Value {
       let #(_, value) = get_find_params(col)
       value
     })
 
-  #(fields <> " = ?", values)
+  #(fields, values)
 }
 
 pub fn create(
@@ -153,6 +164,8 @@ pub fn find_many(
   let query =
     "SELECT id, name, user_id, parent_id, UNIXEPOCH(created_at), UNIXEPOCH(updated_at) FROM folders WHERE " <> where <> " ORDER BY name ASC;"
   logger.info(query)
+
+  io.debug(values)
 
   let rows =
     sqlight.query(query, on: db, with: values, expecting: folder_decoder())
