@@ -234,9 +234,13 @@ pub fn update(
 
   case list.length(fields) > 0 {
     True -> {
-      let values = list.append(set_values, where_values)
       case
-        sqlight.query(query, on: db, with: values, expecting: note_decoder())
+        sqlight.query(
+          query,
+          on: db,
+          with: list.append(set_values, where_values),
+          expecting: note_decoder(),
+        )
       {
         Ok([row]) -> Ok(#(row, fields))
         Ok(_) -> Error(error.InternalServerError)
@@ -244,7 +248,7 @@ pub fn update(
           logger.error(e.message)
           case e.code {
             sqlight.ConstraintForeignkey ->
-              Error(error.CustomError("The target folder does not exist", 400))
+              Error(error.ClientError("The target folder does not exist"))
             _ -> Error(error.InternalServerError)
           }
         }

@@ -675,7 +675,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"title\": \"Definitely updated\",\n    \"body\": \"This is an updated note :)\",\n    \"folder_id\": null\n}"
+							"raw": "{\n    \"title\": \"Certainly updated!\",\n    \"body\": \"This is an updated note :)\",\n    \"folder_id\": null\n}"
 						},
 						"url": {
 							"raw": "{{API_URL}}/notes/4",
@@ -689,52 +689,6 @@
 						}
 					},
 					"response": [
-						{
-							"name": "200",
-							"originalRequest": {
-								"method": "PATCH",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json",
-										"type": "text"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n    \"title\": \"Definitely updated\",\n    \"body\": \"This is an updated note :)\",\n    \"folder_id\": null\n}"
-								},
-								"url": {
-									"raw": "{{API_URL}}/notes/4",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"notes",
-										"4"
-									]
-								}
-							},
-							"status": "OK",
-							"code": 200,
-							"_postman_previewlanguage": "json",
-							"header": [
-								{
-									"key": "connection",
-									"value": "keep-alive"
-								},
-								{
-									"key": "content-length",
-									"value": "241"
-								},
-								{
-									"key": "content-type",
-									"value": "application/json"
-								}
-							],
-							"cookie": [],
-							"body": "{\n    \"ok\": true,\n    \"code\": 200,\n    \"message\": \"Note updated!\",\n    \"data\": {\n        \"id\": 4,\n        \"title\": \"Definitely updated\",\n        \"body\": \"This is an updated note :)\",\n        \"folder_id\": null,\n        \"user_id\": 6,\n        \"created_at\": 1695581112,\n        \"updated_at\": 1695581112\n    },\n    \"meta\": {\n        \"fields\": [\n            \"body\",\n            \"title\"\n        ]\n    }\n}"
-						},
 						{
 							"name": "400",
 							"originalRequest": {
@@ -826,6 +780,482 @@
 							],
 							"cookie": [],
 							"body": "{\n    \"ok\": false,\n    \"code\": 400,\n    \"error\": \"Requested note was not found\",\n    \"errors\": []\n}"
+						},
+						{
+							"name": "200",
+							"originalRequest": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"title\": \"Certainly updated!\",\n    \"body\": \"This is an updated note :)\",\n    \"folder_id\": null\n}"
+								},
+								"url": {
+									"raw": "{{API_URL}}/notes/4",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"notes",
+										"4"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "content-length",
+									"value": "241"
+								},
+								{
+									"key": "content-type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"ok\": true,\n    \"code\": 200,\n    \"message\": \"Note updated!\",\n    \"data\": {\n        \"id\": 4,\n        \"title\": \"Certainly updated!\",\n        \"body\": \"This is an updated note :)\",\n        \"user_id\": 6,\n        \"folder_id\": null,\n        \"created_at\": 1695581112,\n        \"updated_at\": 1695581112\n    },\n    \"meta\": {\n        \"fields\": [\n            \"body\",\n            \"title\"\n        ]\n    }\n}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Folders",
+			"item": [
+				{
+					"name": "Create folder",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"projects\",\n    \"parent_id\": 1\n}"
+						},
+						"url": {
+							"raw": "{{API_URL}}/folders",
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"folders"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "201",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"my_folder\",\n    \"parent_id\": null\n}"
+								},
+								"url": {
+									"raw": "{{API_URL}}/folders",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"folders"
+									]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "content-length",
+									"value": "198"
+								},
+								{
+									"key": "content-type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"ok\": true,\n    \"code\": 201,\n    \"message\": \"Successfully created folder `my_folder`\",\n    \"data\": {\n        \"id\": 2,\n        \"name\": \"my_folder\",\n        \"user_id\": 6,\n        \"parent_id\": null,\n        \"created_at\": 1695941861,\n        \"updated_at\": 1695941861\n    },\n    \"meta\": null\n}"
+						},
+						{
+							"name": "400",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"my_folder\",\n    \"parent_id\": 1\n}"
+								},
+								"url": {
+									"raw": "{{API_URL}}/folders",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"folders"
+									]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "content-length",
+									"value": "84"
+								},
+								{
+									"key": "content-type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"ok\": false,\n    \"code\": 400,\n    \"error\": \"A folder with that name already exists\",\n    \"errors\": []\n}"
+						},
+						{
+							"name": "201",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"projects\",\n    \"parent_id\": 1\n}"
+								},
+								"url": {
+									"raw": "{{API_URL}}/folders",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"folders"
+									]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "content-length",
+									"value": "193"
+								},
+								{
+									"key": "content-type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"ok\": true,\n    \"code\": 201,\n    \"message\": \"Successfully created folder `projects`\",\n    \"data\": {\n        \"id\": 7,\n        \"name\": \"projects\",\n        \"user_id\": 6,\n        \"parent_id\": 1,\n        \"created_at\": 1696027043,\n        \"updated_at\": 1696027043\n    },\n    \"meta\": null\n}"
+						}
+					]
+				},
+				{
+					"name": "Get folders",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{API_URL}}/folders",
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"folders"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "200",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{API_URL}}/folders",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"folders"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "content-length",
+									"value": "293"
+								},
+								{
+									"key": "content-type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"ok\": true,\n    \"code\": 200,\n    \"message\": \"Successfully retrieved folders\",\n    \"data\": [\n        {\n            \"id\": 1,\n            \"name\": \"my_folder\",\n            \"user_id\": 6,\n            \"parent_id\": null,\n            \"created_at\": 1695942499,\n            \"updated_at\": 1695942499\n        },\n        {\n            \"id\": 3,\n            \"name\": \"my_folder\",\n            \"user_id\": 6,\n            \"parent_id\": 1,\n            \"created_at\": 1695942504,\n            \"updated_at\": 1695942504\n        }\n    ],\n    \"meta\": null\n}"
+						}
+					]
+				},
+				{
+					"name": "Get one folder",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{API_URL}}/folders/1",
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"folders",
+								"1"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "200",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{API_URL}}/folders",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"folders"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "content-length",
+									"value": "293"
+								},
+								{
+									"key": "content-type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"ok\": true,\n    \"code\": 200,\n    \"message\": \"Successfully retrieved folders\",\n    \"data\": [\n        {\n            \"id\": 1,\n            \"name\": \"my_folder\",\n            \"user_id\": 6,\n            \"parent_id\": null,\n            \"created_at\": 1695942499,\n            \"updated_at\": 1695942499\n        },\n        {\n            \"id\": 3,\n            \"name\": \"my_folder\",\n            \"user_id\": 6,\n            \"parent_id\": 1,\n            \"created_at\": 1695942504,\n            \"updated_at\": 1695942504\n        }\n    ],\n    \"meta\": null\n}"
+						}
+					]
+				},
+				{
+					"name": "Get folder's contents",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{API_URL}}/folders/1/content?format=mixed",
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"folders",
+								"1",
+								"content"
+							],
+							"query": [
+								{
+									"key": "format",
+									"value": "mixed"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "200",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{API_URL}}/folders/1/content",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"folders",
+										"1",
+										"content"
+									],
+									"query": [
+										{
+											"key": "format",
+											"value": "mixed",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "content-length",
+									"value": "464"
+								},
+								{
+									"key": "content-type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"ok\": true,\n    \"code\": 200,\n    \"message\": \"Successfully retrieved folder content\",\n    \"data\": {\n        \"subfolders\": [\n            {\n                \"id\": 3,\n                \"name\": \"my_folder\",\n                \"user_id\": 6,\n                \"parent_id\": 1,\n                \"created_at\": 1695942504,\n                \"updated_at\": 1695942504\n            },\n            {\n                \"id\": 7,\n                \"name\": \"projects\",\n                \"user_id\": 6,\n                \"parent_id\": 1,\n                \"created_at\": 1696027043,\n                \"updated_at\": 1696027043\n            }\n        ],\n        \"notes\": [\n            {\n                \"id\": 8,\n                \"title\": \"Note Three!\",\n                \"body\": \"This is a note, in a folder.\",\n                \"user_id\": 6,\n                \"folder_id\": 1,\n                \"created_at\": 1696025743,\n                \"updated_at\": 1696025743\n            }\n        ]\n    },\n    \"meta\": null\n}"
+						},
+						{
+							"name": "200",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{API_URL}}/folders/1/content?format=mixed",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"folders",
+										"1",
+										"content"
+									],
+									"query": [
+										{
+											"key": "format",
+											"value": "mixed"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "content-length",
+									"value": "512"
+								},
+								{
+									"key": "content-type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"ok\": true,\n    \"code\": 200,\n    \"message\": \"Successfully retrieved folder content\",\n    \"data\": [\n        {\n            \"type\": \"folder\",\n            \"data\": {\n                \"id\": 3,\n                \"name\": \"my_folder\",\n                \"user_id\": 6,\n                \"parent_id\": 1,\n                \"created_at\": 1695942504,\n                \"updated_at\": 1695942504\n            }\n        },\n        {\n            \"type\": \"folder\",\n            \"data\": {\n                \"id\": 7,\n                \"name\": \"projects\",\n                \"user_id\": 6,\n                \"parent_id\": 1,\n                \"created_at\": 1696027043,\n                \"updated_at\": 1696027043\n            }\n        },\n        {\n            \"type\": \"note\",\n            \"data\": {\n                \"id\": 8,\n                \"title\": \"Note Three!\",\n                \"body\": \"This is a note, in a folder.\",\n                \"user_id\": 6,\n                \"folder_id\": 1,\n                \"created_at\": 1696025743,\n                \"updated_at\": 1696025743\n            }\n        }\n    ],\n    \"meta\": null\n}"
 						}
 					]
 				}

@@ -1,10 +1,10 @@
 import api/api.{Context}
 import api/error
 import api/respond
-import lib/schemas/note.{And}
+import lib/schemas/note
+import lib/database.{And}
 import lib/validator
 import gleam/int
-import gleam/list
 import gleam/json
 import gleam/dynamic
 import gleam/option.{None, Option, Some}
@@ -81,6 +81,7 @@ fn create(ctx: Context) -> Response(ResponseData) {
         validator.Required,
         validator.MinLength(1),
         validator.MaxLength(255),
+        validator.Filename,
       ],
     ),
     validator.Field(
@@ -117,7 +118,7 @@ fn get_all(ctx: Context) -> Response(ResponseData) {
   use <- api.require_method(ctx, Get)
   use uid <- api.require_user(ctx)
 
-  case note.find_many(db: ctx.db, where: [note.User(uid)], condition: And) {
+  case note.find_many(db: ctx.db, where: [note.UserID(uid)], condition: And) {
     Ok(notes) ->
       respond.with_json(
         code: 200,
@@ -139,7 +140,7 @@ pub fn get_one(ctx: Context, note_id: Int) -> Response(ResponseData) {
   case
     note.find_one(
       db: ctx.db,
-      where: [note.ID(note_id), note.User(uid)],
+      where: [note.ID(note_id), note.UserID(uid)],
       condition: And,
     )
   {
@@ -165,11 +166,36 @@ pub fn get_one(ctx: Context, note_id: Int) -> Response(ResponseData) {
 pub fn delete(ctx: Context, note_id: Int) -> Response(ResponseData) {
   use <- api.require_method(ctx, Delete)
   use uid <- api.require_user(ctx)
+  let exists = case
+    note.find_one(
+      db: ctx.db,
+      where: [note.ID(note_id), note.UserID(uid)],
+      condition: And,
+    )
+  {
+    Ok(res) ->
+      case res {
+        Some(_) -> True
+        None -> False
+      }
+    Error(_) -> False
+  }
+
+  use <- fn(exists: Bool, next: fn() -> Response(ResponseData)) {
+    case exists {
+      True -> next()
+      False ->
+        respond.with_err(
+          err: error.ClientError("This note does not exist!"),
+          errors: [],
+        )
+    }
+  }(exists)
 
   case
     note.delete(
       db: ctx.db,
-      where: [note.ID(note_id), note.User(uid)],
+      where: [note.ID(note_id), note.UserID(uid)],
       condition: And,
     )
   {
@@ -207,6 +233,7 @@ pub fn update(ctx: Context, note_id: Int) -> Response(ResponseData) {
         validator.Required,
         validator.MinLength(1),
         validator.MaxLength(255),
+        validator.Filename,
       ],
     ),
     validator.NullableField(
@@ -232,8 +259,8 @@ pub fn update(ctx: Context, note_id: Int) -> Response(ResponseData) {
         title: body.title,
         folder_id: body.folder_id,
       ),
-      where: [note.ID(note_id), note.User(uid)],
-      condition: note.And,
+      where: [note.ID(note_id), note.UserID(uid)],
+      condition: And,
     )
   {
     Ok(#(updated_note, fields)) ->

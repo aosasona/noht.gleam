@@ -9,6 +9,7 @@ import gleam/string
 // This is all primarily for string fields, but we could extend it to other types later
 pub type Rule {
   Email
+  Filename
   NotEqualTo(name: String, value: String)
   EqualTo(name: String, value: String)
   MinLength(Int)
@@ -94,6 +95,12 @@ pub fn validate_field(
 fn match(value value: String, rule rule: Rule) -> MatchResult {
   case rule {
     Email -> email(value)
+    Filename ->
+      regex(
+        "^[a-zA-Z0-9-_\\.]+$",
+        value,
+        "must be a valid filename (a-z, 0-9, -, _, .)",
+      )
     EqualTo(name, to) -> equal_to(name, value, to)
     NotEqualTo(name, to) -> not_equal_to(name, value, to)
     MinLength(min) -> min_length(value, min)

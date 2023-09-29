@@ -24,7 +24,7 @@ pub fn router(ctx: Context) -> Response(ResponseData) {
     ["notes", id] -> notes.id(ctx, id)
     ["folders"] -> folders.root(ctx)
     ["folders", id] -> folders.id(ctx, id)
-    ["folders", id, "children"] -> folders.get_children(ctx, id)
+    ["folders", id, "content"] -> folders.get_content(ctx, id)
     _ -> respond.with_err(err: error.NotFound, errors: [])
   }
 }
