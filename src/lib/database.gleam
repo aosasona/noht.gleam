@@ -1,7 +1,13 @@
 import gleam/erlang/os
 import gleam/result
+import gleam/option.{None, Option, Some}
 import api/error.{ApiError}
 import sqlight
+
+pub type Condition {
+  And
+  Or
+}
 
 fn get_db_path() -> String {
   "DB_PATH"
@@ -15,6 +21,17 @@ pub fn init() -> sqlight.Connection {
   // enable foreign keys
   let assert Ok(_) = sqlight.exec("pragma foreign_keys = on;", db)
   db
+}
+
+pub fn exists(res: Result(Option(a), ApiError)) -> Bool {
+  case res {
+    Ok(d) ->
+      case d {
+        Some(_) -> True
+        None -> False
+      }
+    Error(_) -> False
+  }
 }
 
 pub fn with_connection(

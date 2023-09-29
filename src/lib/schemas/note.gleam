@@ -1,5 +1,6 @@
 import api/error.{ApiError}
 import lib/logger
+import lib/database.{And, Condition, Or}
 import gleam/dynamic
 import gleam/list
 import gleam/map
@@ -32,15 +33,10 @@ pub type UpdateData {
   )
 }
 
-pub type Condition {
-  And
-  Or
-}
-
 pub type Column {
   ID(Int)
-  User(uid: Int)
-  Folder(fid: Int)
+  UserID(uid: Int)
+  FolderID(fid: Int)
 }
 
 fn note_decoder() {
@@ -59,8 +55,8 @@ fn note_decoder() {
 fn get_find_params(by: Column) -> #(String, sqlight.Value) {
   case by {
     ID(id) -> #("id", sqlight.int(id))
-    User(uid) -> #("user_id", sqlight.int(uid))
-    Folder(fid) -> #("folder_id", sqlight.int(fid))
+    UserID(uid) -> #("user_id", sqlight.int(uid))
+    FolderID(fid) -> #("folder_id", sqlight.int(fid))
   }
 }
 
@@ -123,7 +119,7 @@ pub fn find_many(
   let #(where, values) = make_where_clause(condition, by)
 
   let query =
-    "SELECT id, title, body, folder_id, user_id, UNIXEPOCH(created_at), UNIXEPOCH(updated_at) FROM notes WHERE " <> where <> ";"
+    "SELECT id, title, body, folder_id, user_id, UNIXEPOCH(created_at), UNIXEPOCH(updated_at) FROM notes WHERE " <> where <> " ORDER BY title, body ASC;"
   logger.info(query)
 
   let rows =
@@ -191,7 +187,7 @@ pub fn delete(
 
   case rows {
     Ok([row]) -> Ok(row)
-    Ok(_) -> Error(error.InternalServerError)
+    Ok(_) -> Error(error.ClientError("Note not found"))
     Error(e) -> {
       logger.error(e.message)
       Error(error.InternalServerError)
@@ -232,7 +228,7 @@ pub fn update(
   let #(where, where_values) = make_where_clause(condition, by)
 
   let query =
-    "UPDATE notes SET " <> string.join(fields, with: " = ?, ") <> " = ? WHERE " <> where <> " RETURNING id, title, body, folder_id, user_id, UNIXEPOCH(created_at), UNIXEPOCH(updated_at);"
+    "UPDATE notes SET " <> string.join(fields, with: " = ?, ") <> " = ?, updated_at = CURRENT_TIMESTAMP WHERE " <> where <> " RETURNING id, title, body, folder_id, user_id, UNIXEPOCH(created_at), UNIXEPOCH(updated_at);"
 
   logger.info(query)
 
