@@ -1258,6 +1258,236 @@
 							"body": "{\n    \"ok\": true,\n    \"code\": 200,\n    \"message\": \"Successfully retrieved folder content\",\n    \"data\": [\n        {\n            \"type\": \"folder\",\n            \"data\": {\n                \"id\": 3,\n                \"name\": \"my_folder\",\n                \"user_id\": 6,\n                \"parent_id\": 1,\n                \"created_at\": 1695942504,\n                \"updated_at\": 1695942504\n            }\n        },\n        {\n            \"type\": \"folder\",\n            \"data\": {\n                \"id\": 7,\n                \"name\": \"projects\",\n                \"user_id\": 6,\n                \"parent_id\": 1,\n                \"created_at\": 1696027043,\n                \"updated_at\": 1696027043\n            }\n        },\n        {\n            \"type\": \"note\",\n            \"data\": {\n                \"id\": 8,\n                \"title\": \"Note Three!\",\n                \"body\": \"This is a note, in a folder.\",\n                \"user_id\": 6,\n                \"folder_id\": 1,\n                \"created_at\": 1696025743,\n                \"updated_at\": 1696025743\n            }\n        }\n    ],\n    \"meta\": null\n}"
 						}
 					]
+				},
+				{
+					"name": "Delete folder",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{API_URL}}/folders/8",
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"folders",
+								"8"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "200",
+							"originalRequest": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{API_URL}}/folders/8",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"folders",
+										"8"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "content-length",
+									"value": "90"
+								},
+								{
+									"key": "content-type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"ok\": true,\n    \"code\": 200,\n    \"message\": \"Successfully deleted folder\",\n    \"data\": {\n        \"id\": 8\n    },\n    \"meta\": null\n}"
+						},
+						{
+							"name": "400",
+							"originalRequest": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{API_URL}}/folders/8",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"folders",
+										"8"
+									]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "content-length",
+									"value": "62"
+								},
+								{
+									"key": "content-type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"ok\": false,\n    \"code\": 400,\n    \"error\": \"Folder not found\",\n    \"errors\": []\n}"
+						}
+					]
+				},
+				{
+					"name": "Update folder",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"empty-folder\",\n    \"parent_id\": 7\n}"
+						},
+						"url": {
+							"raw": "{{API_URL}}/folders/6",
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"folders",
+								"6"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "200",
+							"originalRequest": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"empty-folder\",\n    \"parent_id\": null\n}"
+								},
+								"url": {
+									"raw": "{{API_URL}}/folders/6",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"folders",
+										"6"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "content-length",
+									"value": "190"
+								},
+								{
+									"key": "content-type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"ok\": true,\n    \"code\": 200,\n    \"message\": \"Note updated!\",\n    \"data\": {\n        \"id\": 6,\n        \"name\": \"empty-folder\",\n        \"user_id\": 6,\n        \"parent_id\": null,\n        \"created_at\": 1696027012,\n        \"updated_at\": 1696030123\n    },\n    \"meta\": {\n        \"fields\": [\n            \"name\"\n        ]\n    }\n}"
+						},
+						{
+							"name": "Update folder",
+							"originalRequest": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"empty-folder\",\n    \"parent_id\": 7\n}"
+								},
+								"url": {
+									"raw": "{{API_URL}}/folders/6",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"folders",
+										"6"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "content-length",
+									"value": "199"
+								},
+								{
+									"key": "content-type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"ok\": true,\n    \"code\": 200,\n    \"message\": \"Note updated!\",\n    \"data\": {\n        \"id\": 6,\n        \"name\": \"empty-folder\",\n        \"user_id\": 6,\n        \"parent_id\": 7,\n        \"created_at\": 1696027012,\n        \"updated_at\": 1696031867\n    },\n    \"meta\": {\n        \"fields\": [\n            \"name\",\n            \"parent_id\"\n        ]\n    }\n}"
+						}
+					]
 				}
 			]
 		},

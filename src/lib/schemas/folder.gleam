@@ -2,7 +2,6 @@ import api/error.{ApiError}
 import lib/database.{And, Condition, Or}
 import lib/schemas/note.{Note}
 import lib/logger
-import gleam/io
 import gleam/string
 import gleam/list
 import gleam/dynamic
@@ -164,8 +163,6 @@ pub fn find_many(
   let query =
     "SELECT id, name, user_id, parent_id, UNIXEPOCH(created_at), UNIXEPOCH(updated_at) FROM folders WHERE " <> where <> " ORDER BY name ASC;"
   logger.info(query)
-
-  io.debug(values)
 
   let rows =
     sqlight.query(query, on: db, with: values, expecting: folder_decoder())

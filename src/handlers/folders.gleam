@@ -118,7 +118,11 @@ fn get_all(ctx: Context) -> Response(ResponseData) {
   use uid <- api.require_user(ctx)
 
   case
-    folder.find_many(db: ctx.db, where: [folder.UserID(uid)], condition: And)
+    folder.find_many(
+      db: ctx.db,
+      where: [folder.UserID(uid), folder.ParentID(None)],
+      condition: And,
+    )
   {
     Ok(folders) ->
       respond.with_json(
@@ -192,7 +196,7 @@ pub fn get_content(ctx: Context, str_id: String) -> Response(ResponseData) {
   let subfolders = case
     folder.find_many(
       db: ctx.db,
-      where: [folder.ParentID(folder_id), folder.UserID(uid)],
+      where: [folder.ParentID(Some(folder_id)), folder.UserID(uid)],
       condition: And,
     )
   {
@@ -236,60 +240,59 @@ pub fn get_content(ctx: Context, str_id: String) -> Response(ResponseData) {
 }
 
 fn update(ctx: Context, folder_id: Int) -> Response(ResponseData) {
-  todo
-  // use <- api.require_method(ctx, Patch)
-  // use uid <- api.require_user(ctx)
-  // use <- api.require_json(ctx)
-  // validator.Numeric
-  // use body <- api.to_json(
-  //   ctx,
-  //   dynamic.decode2(
-  //     UpdateNoteBody,
-  //     dynamic.field("name", dynamic.optional(dynamic.string)),
-  //     dynamic.field("parent_id", dynamic.optional(dynamic.int)),
-  //   ),
-  // )
-  //
-  // use <- api.validate_body([
-  //   validator.NullableField(
-  //     name: "name",
-  //     value: body.name,
-  //     rules: [
-  //       validator.Required,
-  //       validator.MinLength(1),
-  //       validator.MaxLength(255),
-  //       validator.Filename,
-  //     ],
-  //   ),
-  //   validator.NullableField(
-  //     name: "parent_id",
-  //     value: case body.parent_id {
-  //       Some(fid) -> Some(int.to_string(fid))
-  //       None -> None
-  //     },
-  //     rules: [validator.Numeric],
-  //   ),
-  // ])
-  //
-  // case
-  //   folder.update(
-  //     db: ctx.db,
-  //     data: folder.UpdateData(name: body.name, parent_id: body.parent_id),
-  //     where: [folder.ID(folder_id), folder.UserID(uid)],
-  //     condition: And,
-  //   )
-  // {
-  //   Ok(#(updated_folder, fields)) ->
-  //     respond.with_json(
-  //       code: 200,
-  //       message: "Note updated!",
-  //       data: Some(folder.as_json(updated_folder)),
-  //       meta: Some(json.object([
-  //         #("fields", json.array(from: fields, of: json.string)),
-  //       ])),
-  //     )
-  //   Error(e) -> respond.with_err(err: e, errors: [])
-  // }
+  use <- api.require_method(ctx, Patch)
+  use uid <- api.require_user(ctx)
+  use <- api.require_json(ctx)
+  validator.Numeric
+  use body <- api.to_json(
+    ctx,
+    dynamic.decode2(
+      UpdateNoteBody,
+      dynamic.field("name", dynamic.optional(dynamic.string)),
+      dynamic.field("parent_id", dynamic.optional(dynamic.int)),
+    ),
+  )
+
+  use <- api.validate_body([
+    validator.NullableField(
+      name: "name",
+      value: body.name,
+      rules: [
+        validator.Required,
+        validator.MinLength(1),
+        validator.MaxLength(255),
+        validator.Filename,
+      ],
+    ),
+    validator.NullableField(
+      name: "parent_id",
+      value: case body.parent_id {
+        Some(fid) -> Some(int.to_string(fid))
+        None -> None
+      },
+      rules: [validator.Numeric],
+    ),
+  ])
+
+  case
+    folder.update(
+      db: ctx.db,
+      data: folder.UpdateData(name: body.name, parent_id: body.parent_id),
+      where: [folder.ID(folder_id), folder.UserID(uid)],
+      condition: And,
+    )
+  {
+    Ok(#(updated_folder, fields)) ->
+      respond.with_json(
+        code: 200,
+        message: "Note updated!",
+        data: Some(folder.as_json(updated_folder)),
+        meta: Some(json.object([
+          #("fields", json.array(from: fields, of: json.string)),
+        ])),
+      )
+    Error(e) -> respond.with_err(err: e, errors: [])
+  }
 }
 
 fn delete(ctx: Context, folder_id: Int) -> Response(ResponseData) {
